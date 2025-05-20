@@ -7,6 +7,7 @@ import questionRouter from "./src/routes/questionRoute.js";
 import voteRouter from "./src/routes/voteRoute.js";
 import CookieParser from "cookie-parser";
 import { authenticateToken } from "./src/middlewares/authMiddleware.js";
+import answerRouter from "./src/routes/answerRoute.js"
 dotenv.config();
 
 
@@ -31,6 +32,7 @@ app.get("/", (req, res) => {
 });
 
 app.use("/api/auth", authRouter);
+app.use("/api/answer", answerRouter);
 app.use("/api/question", authenticateToken,questionRouter);
 app.use("/api/vote", authenticateToken,voteRouter);
 
