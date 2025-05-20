@@ -6,7 +6,7 @@ const QuestionSchema = new mongoose.Schema(
         title: { type: String },
         description: { type: String },
         images: [{ type: String }],
-        tag: [{ type: String }],
+        tags: [{ type: String }],
         upvotes: { type: Number, default: 0 },
         downvotes: { type: Number, default: 0 },
         viewsCount: { type: Number, default: 0 },

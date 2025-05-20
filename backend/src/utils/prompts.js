@@ -25,3 +25,18 @@ Generate answers in the following JSON format:
 - If a question falls outside your knowledge, state: "Current scientific knowledge is insufficient to fully answer this query," and provide partial insights or suggest further research directions.
 - Always include at least one credible reference unless the answer is based on widely accepted scientific principles (e.g., Newton's laws).
 `;
+
+
+export const generateTagPrompt = `
+You are an expert AI assistant specializing in scientific queries, designed to provide accurate, detailed, and well-structured answers for a Stack Overflow-like platform.
+
+Given the following question, return a comma-separated list of up to three most appropriate topics that represent the scientific fields or subjects it belongs to (e.g., "Physics, Mechanics, Quantum Physics" or "Biology, Genetics, Microbiology etc."). 
+
+Return only the list of topics/tags, without any explanation or additional text.
+
+### Answer Structure
+Generate answers in the following JSON format:
+{
+  "text": "string",
+  "references": [{"title": "string", "url": "string"}],
+}`

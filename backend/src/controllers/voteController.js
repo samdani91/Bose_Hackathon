@@ -1,7 +1,7 @@
 import Vote from "../models/Vote.js";
 import Answer from "../models/Answer.js";
-import { updateQuestionVotes } from "./questionController.js";
-import { updateAnswerVotes } from "./answerController.js";
+import { downVoteQuestion, upVoteQuestion } from "./questionController.js";
+import { downVoteAnswer, upVoteAnswer } from "./answerController.js";
 
 export async function upvote(req, res) {
     try {
@@ -24,8 +24,8 @@ export async function upvote(req, res) {
             const vote = new Vote({ user_id: userId, question_id, answer_id, type: 'upvote' });
             await vote.save();
 
-            if (question_id) await updateQuestionVotes(question_id, 1, 0);
-            if (answer_id) await updateAnswerVotes(answer_id, 1, 0);
+            if (question_id) await upVoteQuestion(question_id);
+            if (answer_id) await upVoteAnswer(answer_id);
 
             return res.status(201).json({ message: "Upvoted successfully" });
         }
@@ -47,26 +47,16 @@ export async function downvote(req, res) {
             return res.status(400).json({ message: "question_id or answer_id required" });
         }
 
-        let existingVote = await Vote.findOne({ user_id: userId, question_id, answer_id });
+        let existingVote = await Vote.findOne({ user_id: userId, question_id, answer_id, type: 'downvote' });
 
         if (existingVote) {
-            if (existingVote.type === 'downvote') {
-                return res.status(200).json({ message: "Already downvoted" });
-            } else {
-                existingVote.type = 'downvote';
-                await existingVote.save();
-
-                if (question_id) await updateQuestionVotes(question_id, -1, 1);
-                if (answer_id) await updateAnswerVotes(answer_id, -1, 1);
-
-                return res.status(200).json({ message: "Changed vote to downvote" });
-            }
+            return res.status(200).json({ message: "Already downvoted" });
         } else {
             const vote = new Vote({ user_id: userId, question_id, answer_id, type: 'downvote' });
             await vote.save();
 
-            if (question_id) await updateQuestionVotes(question_id, 0, 1);
-            if (answer_id) await updateAnswerVotes(answer_id, 0, 1);
+            if (question_id) await downVoteQuestion(question_id);
+            if (answer_id) await downVoteAnswer(answer_id);
 
             return res.status(201).json({ message: "Downvoted successfully" });
         }

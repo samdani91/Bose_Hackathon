@@ -1,5 +1,5 @@
 import Question from "../models/Question.js";
-import { generateTag } from "./aiController.js";
+import { generateTagPrompt } from "../utils/prompts.js";
 
 export const createQuestion = async (req, res) => {
     try {
@@ -17,14 +17,22 @@ export const createQuestion = async (req, res) => {
             return res.status(400).json({ message: "Title and description are required." });
         }
 
-        const tag = await generateTag(description);
+        const GEMINI_API_KEY = process.env.GEMINI_API_KEY || "";
+        const API_BASE_URL = process.env.GEMINI_API_URL || "";
+        const API_URL = `${API_BASE_URL}?key=${GEMINI_API_KEY}`;
+        const response = await axios.post(API_URL, {
+            contents: [{ parts: [{ text: `${generateTagPrompt}\n\n###Question\n${JSON.stringify(description)}` }] }],
+        });
+
+        const tagsString = response.data.candidates[0].content.parts[0].text;
+        const tags = tagsString.split(',').map(tag => tag.trim());
 
         const question = new Question({
             user_id: userId,
             title,
             description,
             images: Array.isArray(images) ? images : [],
-            tag,
+            tags,
         });
 
         await question.save();
@@ -54,11 +62,20 @@ export const updateQuestion = async (req, res) => {
 
         if (title) question.title = title;
         if (description) {
+            const GEMINI_API_KEY = process.env.GEMINI_API_KEY || "";
+            const API_BASE_URL = process.env.GEMINI_API_URL || "";
+            const API_URL = `${API_BASE_URL}?key=${GEMINI_API_KEY}`;
+            const response = await axios.post(API_URL, {
+                contents: [{ parts: [{ text: `${generateTagPrompt}\n\n###Question\n${JSON.stringify(description)}` }] }],
+            });
+
+            const tagsString = response.data.candidates[0].content.parts[0].text;
+            const tags = tagsString.split(',').map(tag => tag.trim());
             question.description = description;
-            question.tag = await generateTag(description);
+            question.tags = tags;
         }
         if (images) question.images = Array.isArray(images) ? images : [];
-        
+
 
         await question.save();
 
@@ -94,16 +111,39 @@ export const deleteQuestion = async (req, res) => {
     }
 };
 
-export const updateQuestionVotes = async (question_id, upvoteChange, downvoteChange) => {
-    try {
-        await Question.findByIdAndUpdate(question_id, {
-            $inc: {
-                upvotes: upvoteChange,
-                downvotes: downvoteChange
-            }
-        });
-    } catch (error) {
-        console.error("Error updating question vote counts:", error);
-        throw error;
+
+export const upVoteQuestion = async (questionId) => {
+  try {
+    const updatedQuestion = await Question.findByIdAndUpdate(
+        questionId,
+      { $inc: { upVoteCount: 1 } },
+      { new: true }
+    );
+
+    if (!updatedQuestion) {
+      return res.status(404).json({ error: 'Question not found' });
     }
-};
+
+    return updatedQuestion;
+  } catch (error) {
+    console.error('Error upvoting question:', error);
+  }
+}
+
+export const downVoteQuestion = async (questionId) => {
+  try {
+    const updatedQuestion = await Answer.findByIdAndUpdate(
+      questionId,
+      { $inc: { downVoteCount: 1 } },
+      { new: true }
+    );
+
+    if (!updatedQuestion) {
+      return res.status(404).json({ error: 'Question not found' });
+    }
+
+    return updatedQuestion;
+  } catch (error) {
+    console.error('Error downvoting qustion:', error);
+  }
+}
