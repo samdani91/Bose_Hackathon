@@ -25,17 +25,19 @@ const Register: React.FC = () => {
     
     if (!formData.email.trim()) {
       newErrors.email = 'Email is required';
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Invalid email address';
+    } else if (!/^[a-zA-Z0-9._%+-]+@gmail\.com$/.test(formData.email)) {
+      newErrors.email = 'Email must be a valid Gmail address';
     }
     
     if (!formData.password) {
       newErrors.password = 'Password is required';
-    } else if (formData.password.length < 8) {
-      newErrors.password = 'Password must be at least 8 characters';
+    } else if (formData.password.length < 6) {
+      newErrors.password = 'Password must be at least 6 characters';
     }
     
-    if (formData.password !== formData.confirmPassword) {
+    if (!formData.confirmPassword) {
+      newErrors.confirmPassword = 'Confirm password is required';
+    } else if (formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = 'Passwords do not match';
     }
     
@@ -46,7 +48,6 @@ const Register: React.FC = () => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-    // Clear error when user starts typing
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: '' }));
     }
@@ -62,13 +63,29 @@ const Register: React.FC = () => {
     setLoading(true);
 
     try {
-      // In a real app, you would call your registration API here
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
-      
+      const response = await fetch(`${import.meta.env.VITE_BASE_URL}/api/auth/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          password: formData.password,
+          confirmPassword: formData.confirmPassword
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Registration failed');
+      }
+
       toast.success('Registration successful! Please sign in.');
       navigate('/login');
-    } catch (error) {
-      toast.error('Failed to create account. Please try again.');
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to create account. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -110,6 +127,7 @@ const Register: React.FC = () => {
               value={formData.email}
               onChange={handleChange}
               error={errors.email}
+              placeholder="example@gmail.com"
             />
             <Input
               label="Password"

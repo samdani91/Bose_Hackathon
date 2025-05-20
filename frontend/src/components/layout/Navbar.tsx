@@ -99,7 +99,7 @@ const Navbar: React.FC = () => {
               onClick={() => navigate('/login')}
             >
               <LogIn className="h-4 w-4" />
-              Login
+              Sign In
             </Button>
           </div>
           <div className="-mr-2 flex items-center sm:hidden">
