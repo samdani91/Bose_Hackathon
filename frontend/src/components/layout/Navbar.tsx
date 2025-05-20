@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Search, Menu, X, MessageCircle, Bell, User, Settings, UserCircle } from 'lucide-react';
+import { Search, Menu, X, MessageCircle, Bell, User, Settings, UserCircle, LogIn } from 'lucide-react';
 import { Link } from '../ui/Link';
 import { Dropdown, DropdownItem } from '../ui/Dropdown';
 import { useNavigate } from 'react-router-dom';
+import { Button } from '../ui/Button';
 
 const Navbar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -90,6 +91,16 @@ const Navbar: React.FC = () => {
                 )}
               </Dropdown>
             </div>
+            {/* Added Login Button */}
+            <Button
+              variant="outline"
+              size="sm"
+              className="ml-3 flex items-center gap-1"
+              onClick={() => navigate('/login')}
+            >
+              <LogIn className="h-4 w-4" />
+              Sign In
+            </Button>
           </div>
           <div className="-mr-2 flex items-center sm:hidden">
             <button
