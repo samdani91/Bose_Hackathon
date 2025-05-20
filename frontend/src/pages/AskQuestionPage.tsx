@@ -1,55 +1,56 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Button } from '../components/ui/Button';
-import { tags } from '../data/mockData';
-import type { Tag } from '../types';
 import { Link } from '../components/ui/Link';
-import { ArrowLeft } from 'lucide-react';
-import { Badge } from '../components/ui/Badge';
+import { ArrowLeft, X, Upload } from 'lucide-react';
 
 export const AskQuestionPage: React.FC = () => {
+  // Form state
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [tagInput, setTagInput] = useState('');
-  const [suggestions, setSuggestions] = useState<Tag[]>([]);
+  const [images, setImages] = useState<File[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Error state
   const [errors, setErrors] = useState({
     title: '',
     body: '',
-    tags: '',
+    images: '',
   });
 
-  const handleTagInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setTagInput(value);
-    
-    if (value.trim().length > 0) {
-      const filtered = tags
-        .filter(tag => tag.name.toLowerCase().includes(value.toLowerCase()))
-        .slice(0, 5);
-      setSuggestions(filtered);
-    } else {
-      setSuggestions([]);
+  // Constants
+  const MAX_TITLE_LENGTH = 150;
+  const MAX_BODY_LENGTH = 3000;
+  const MAX_IMAGES = 3;
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const newImages = Array.from(e.target.files);
+      
+      if (images.length + newImages.length > MAX_IMAGES) {
+        setErrors({
+          ...errors,
+          images: `You can upload a maximum of ${MAX_IMAGES} images`
+        });
+        return;
+      }
+      
+      setImages([...images, ...newImages]);
+      setErrors({...errors, images: ''});
     }
   };
 
-  const addTag = (tagName: string) => {
-    if (!selectedTags.includes(tagName) && selectedTags.length < 5) {
-      setSelectedTags([...selectedTags, tagName]);
-      setTagInput('');
-      setSuggestions([]);
-      setErrors({...errors, tags: ''});
-    }
-  };
-
-  const removeTag = (tagName: string) => {
-    setSelectedTags(selectedTags.filter(tag => tag !== tagName));
+  const removeImage = (index: number) => {
+    const newImages = [...images];
+    newImages.splice(index, 1);
+    setImages(newImages);
   };
 
   const validateForm = () => {
     const newErrors = {
       title: '',
       body: '',
-      tags: '',
+      images: '',
     };
     
     let isValid = true;
@@ -57,15 +58,21 @@ export const AskQuestionPage: React.FC = () => {
     if (title.trim().length < 15) {
       newErrors.title = 'Title must be at least 15 characters';
       isValid = false;
+    } else if (title.length > MAX_TITLE_LENGTH) {
+      newErrors.title = `Title must be less than ${MAX_TITLE_LENGTH} characters`;
+      isValid = false;
     }
     
     if (body.trim().length < 30) {
       newErrors.body = 'Body must be at least 30 characters';
       isValid = false;
+    } else if (body.length > MAX_BODY_LENGTH) {
+      newErrors.body = `Body must be less than ${MAX_BODY_LENGTH} characters`;
+      isValid = false;
     }
     
-    if (selectedTags.length === 0) {
-      newErrors.tags = 'At least one tag is required';
+    if (images.length > MAX_IMAGES) {
+      newErrors.images = `You can upload a maximum of ${MAX_IMAGES} images`;
       isValid = false;
     }
     
@@ -73,152 +80,198 @@ export const AskQuestionPage: React.FC = () => {
     return isValid;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (validateForm()) {
-      // In a real app, this would submit to an API
-      console.log({ title, body, tags: selectedTags });
-      alert('Question submitted successfully!');
+      setIsUploading(true);
       
-      // Reset form
-      setTitle('');
-      setBody('');
-      setSelectedTags([]);
+      try {
+        // In a real app, this would submit to an API
+        console.log({ title, body, images });
+        
+        // Simulate API call
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        
+        alert('Question submitted successfully!');
+        
+        // Reset form
+        setTitle('');
+        setBody('');
+        setImages([]);
+      } catch (error) {
+        console.error('Error submitting question:', error);
+        alert('There was an error submitting your question. Please try again.');
+      } finally {
+        setIsUploading(false);
+      }
     }
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-6">
         <Link to="/">
-          <Button variant="outline" size="sm" className="flex items-center">
-            <ArrowLeft className="h-4 w-4 mr-2" />
+          <Button variant="outline" size="sm" className="flex items-center gap-2">
+            <ArrowLeft className="h-4 w-4" />
             Back to Questions
           </Button>
         </Link>
       </div>
 
-      <div className="bg-white shadow rounded-lg">
-        <div className="px-6 py-5 border-b border-slate-200">
-          <h1 className="text-xl font-bold text-slate-900">Ask a Question</h1>
+      <div className="bg-white shadow rounded-lg overflow-hidden">
+        <div className="px-6 py-5 bg-slate-50 border-b border-slate-200">
+          <h1 className="text-2xl font-bold text-slate-800">Ask a Question</h1>
+          <p className="mt-1 text-sm text-slate-600">
+            Share your knowledge and help others by asking a clear, detailed question
+          </p>
         </div>
         
-        <form onSubmit={handleSubmit} className="p-6">
-          <div className="space-y-6">
-            {/* Title */}
-            <div>
-              <label htmlFor="title" className="block text-sm font-medium text-slate-700 mb-1">
+        <form onSubmit={handleSubmit} className="p-6 space-y-8">
+          {/* Title Section */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <label htmlFor="title" className="block text-sm font-medium text-slate-700">
                 Title
               </label>
-              <p className="text-xs text-slate-500 mb-2">
-                Be specific and imagine you're asking a question to another person
-              </p>
+              <span className={`text-xs ${title.length > MAX_TITLE_LENGTH ? 'text-rose-600' : 'text-slate-500'}`}>
+                {title.length}/{MAX_TITLE_LENGTH}
+              </span>
+            </div>
+            <p className="text-xs text-slate-500">
+              Be specific and imagine you're asking a question to another person
+            </p>
+            <input
+              type="text"
+              id="title"
+              className={`block w-full rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm border ${
+                errors.title ? 'border-rose-300' : 'border-slate-300'
+              } px-4 py-2`}
+              value={title}
+              onChange={(e) => {
+                setTitle(e.target.value);
+                if (e.target.value.length >= 15 && e.target.value.length <= MAX_TITLE_LENGTH) {
+                  setErrors({...errors, title: ''});
+                }
+              }}
+              placeholder="e.g., How does quantum entanglement work?"
+              maxLength={MAX_TITLE_LENGTH}
+            />
+            {errors.title && (
+              <p className="mt-1 text-sm text-rose-600">{errors.title}</p>
+            )}
+          </div>
+          
+          {/* Body Section */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <label htmlFor="body" className="block text-sm font-medium text-slate-700">
+                Detailed Explanation
+              </label>
+              <span className={`text-xs ${body.length > MAX_BODY_LENGTH ? 'text-rose-600' : 'text-slate-500'}`}>
+                {body.length}/{MAX_BODY_LENGTH}
+              </span>
+            </div>
+            <p className="text-xs text-slate-500">
+              Include all the information someone would need to answer your question
+            </p>
+            <textarea
+              id="body"
+              rows={8}
+              className={`block w-full rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm border ${
+                errors.body ? 'border-rose-300' : 'border-slate-300'
+              } px-4 py-2`}
+              value={body}
+              onChange={(e) => {
+                setBody(e.target.value);
+                if (e.target.value.length >= 30 && e.target.value.length <= MAX_BODY_LENGTH) {
+                  setErrors({...errors, body: ''});
+                }
+              }}
+              placeholder="Explain your question in detail..."
+              maxLength={MAX_BODY_LENGTH}
+            />
+            {errors.body && (
+              <p className="mt-1 text-sm text-rose-600">{errors.body}</p>
+            )}
+          </div>
+          
+          {/* Image Upload Section */}
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-slate-700">
+              Images (Optional)
+            </label>
+            <p className="text-xs text-slate-500">
+              Add up to {MAX_IMAGES} images to help explain your question
+            </p>
+            
+            <div className="mt-2">
               <input
-                type="text"
-                id="title"
-                className={`block w-full rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm border ${errors.title ? 'border-rose-300' : 'border-slate-300'}`}
-                value={title}
-                onChange={(e) => {
-                  setTitle(e.target.value);
-                  if (e.target.value.length >= 15) {
-                    setErrors({...errors, title: ''});
-                  }
-                }}
-                placeholder="e.g., How does quantum entanglement work?"
+                type="file"
+                ref={fileInputRef}
+                onChange={handleImageUpload}
+                accept="image/*"
+                multiple
+                className="hidden"
+                disabled={images.length >= MAX_IMAGES}
               />
-              {errors.title && (
-                <p className="mt-1 text-sm text-rose-600">{errors.title}</p>
-              )}
-            </div>
-            
-            {/* Body */}
-            <div>
-              <label htmlFor="body" className="block text-sm font-medium text-slate-700 mb-1">
-                Body
-              </label>
-              <p className="text-xs text-slate-500 mb-2">
-                Include all the information someone would need to answer your question
-              </p>
-              <textarea
-                id="body"
-                rows={10}
-                className={`block w-full rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm border ${errors.body ? 'border-rose-300' : 'border-slate-300'}`}
-                value={body}
-                onChange={(e) => {
-                  setBody(e.target.value);
-                  if (e.target.value.length >= 30) {
-                    setErrors({...errors, body: ''});
-                  }
-                }}
-                placeholder="Explain your question in detail..."
-              />
-              {errors.body && (
-                <p className="mt-1 text-sm text-rose-600">{errors.body}</p>
-              )}
-            </div>
-            
-            {/* Tags */}
-            <div>
-              <label htmlFor="tags" className="block text-sm font-medium text-slate-700 mb-1">
-                Tags
-              </label>
-              <p className="text-xs text-slate-500 mb-2">
-                Add up to 5 tags to describe what your question is about
-              </p>
-              <div className="flex flex-wrap gap-2 mb-2">
-                {selectedTags.map(tag => (
-                  <Badge key={tag} variant="primary" className="flex items-center">
-                    {tag}
-                    <button
-                      type="button"
-                      className="ml-1 text-indigo-700 hover:text-indigo-900 font-bold"
-                      onClick={() => removeTag(tag)}
-                    >
-                      &times;
-                    </button>
-                  </Badge>
-                ))}
-              </div>
-              <div className="relative">
-                <input
-                  type="text"
-                  id="tags"
-                  className={`block w-full rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm border ${errors.tags ? 'border-rose-300' : 'border-slate-300'}`}
-                  value={tagInput}
-                  onChange={handleTagInput}
-                  placeholder="e.g., physics, quantum-mechanics"
-                  disabled={selectedTags.length >= 5}
-                />
-                {suggestions.length > 0 && (
-                  <div className="absolute z-10 w-full mt-1 bg-white shadow-lg rounded-md border border-slate-200 max-h-60 overflow-auto">
-                    {suggestions.map(tag => (
-                      <button
-                        key={tag.id}
-                        type="button"
-                        className="w-full px-4 py-2 text-left text-sm hover:bg-slate-50 flex justify-between items-center"
-                        onClick={() => addTag(tag.name)}
-                      >
-                        <span>{tag.name}</span>
-                        <span className="text-xs text-slate-500">×{tag.count}</span>
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-              {errors.tags && (
-                <p className="mt-1 text-sm text-rose-600">{errors.tags}</p>
-              )}
-              {selectedTags.length >= 5 && (
-                <p className="mt-1 text-sm text-amber-600">Maximum of 5 tags reached</p>
-              )}
-            </div>
-
-            <div className="flex justify-end">
-              <Button type="submit" size="lg">
-                Post Your Question
+              
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={images.length >= MAX_IMAGES}
+                className="flex items-center gap-2"
+              >
+                <Upload className="h-4 w-4" />
+                {images.length >= MAX_IMAGES ? 'Maximum images reached' : 'Upload Images'}
               </Button>
+              
+              {errors.images && (
+                <p className="mt-1 text-sm text-rose-600">{errors.images}</p>
+              )}
+              
+              {images.length > 0 && (
+                <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                  {images.map((image, index) => (
+                    <div key={index} className="relative group rounded-md overflow-hidden border border-slate-200">
+                      <img
+                        src={URL.createObjectURL(image)}
+                        alt={`Preview ${index + 1}`}
+                        className="w-full h-32 object-cover"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeImage(index)}
+                        className="absolute top-2 right-2 bg-slate-800/80 text-white rounded-full p-1 hover:bg-rose-600 transition-colors"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                      <div className="p-2 bg-slate-50">
+                        <p className="text-xs text-slate-600 truncate">
+                          {image.name}
+                        </p>
+                        <p className="text-xs text-slate-500">
+                          {(image.size / 1024).toFixed(1)} KB
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
+          </div>
+
+          {/* Submit Button */}
+          <div className="flex justify-end pt-4">
+            <Button
+              type="submit"
+              size="lg"
+              className="min-w-[200px]"
+              disabled={isUploading}
+            >
+              {isUploading ? 'Posting...' : 'Post Your Question'}
+            </Button>
           </div>
         </form>
       </div>
