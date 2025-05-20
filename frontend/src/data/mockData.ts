@@ -1,0 +1,190 @@
+import type { User, Question, Answer, Comment, Tag, Badge } from '../types';
+
+// Mock Users
+export const users: User[] = [
+  {
+    id: '1',
+    username: 'jsciencewhiz',
+    displayName: 'Jane Smith',
+    email: 'jane.smith@example.com',
+    avatarUrl: 'https://images.pexels.com/photos/733872/pexels-photo-733872.jpeg?auto=compress&cs=tinysrgb&w=100',
+    reputation: 5432,
+    joinedAt: '2022-03-12T10:15:00Z',
+    badges: [
+      { id: '1', name: 'Enlightened', type: 'gold', description: 'First to answer and accepted with score of 10 or more' },
+      { id: '2', name: 'Good Answer', type: 'silver', description: 'Answer score of 25 or more' },
+      { id: '3', name: 'Scholar', type: 'bronze', description: 'First accepted answer on your own question' },
+    ],
+  },
+  {
+    id: '2',
+    username: 'quantum_coder',
+    displayName: 'Alex Rodriguez',
+    email: 'alex.rodriguez@example.com',
+    avatarUrl: 'https://images.pexels.com/photos/614810/pexels-photo-614810.jpeg?auto=compress&cs=tinysrgb&w=100',
+    reputation: 3246,
+    joinedAt: '2022-05-01T14:30:00Z',
+    badges: [
+      { id: '4', name: 'Curious', type: 'bronze', description: 'Asked a well-received question on 5 separate days' },
+    ],
+  },
+  {
+    id: '3',
+    username: 'data_explorer',
+    displayName: 'Sam Taylor',
+    email: 'sam.taylor@example.com',
+    avatarUrl: 'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=100',
+    reputation: 8721,
+    joinedAt: '2021-11-05T09:45:00Z',
+    badges: [
+      { id: '5', name: 'Famous Question', type: 'gold', description: 'Question with 10,000 views' },
+      { id: '6', name: 'Guru', type: 'silver', description: 'Accepted answer and score of 40 or more' },
+    ],
+  },
+];
+
+// Mock Tags
+export const tags: Tag[] = [
+  { id: '1', name: 'physics', description: 'For questions about the study of the physical world.', count: 1452 },
+  { id: '2', name: 'biology', description: 'For questions about the study of living organisms.', count: 987 },
+  { id: '3', name: 'chemistry', description: 'For questions about the scientific study of the properties of substances.', count: 1135 },
+  { id: '4', name: 'astronomy', description: 'For questions about celestial objects, natural phenomena, and the universe.', count: 756 },
+  { id: '5', name: 'mathematics', description: 'For questions about numbers, geometry, and mathematical analysis.', count: 2431 },
+  { id: '6', name: 'computer-science', description: 'For questions about the theoretical foundations of computing.', count: 1879 },
+];
+
+// Mock Comments
+const comments: Comment[] = [
+  {
+    id: '1',
+    body: 'Could you elaborate on the photon\'s behavior in your answer?',
+    createdAt: '2023-08-15T13:25:00Z',
+    authorId: '3',
+    author: users.find(u => u.id === '3')!,
+    parentId: '1',
+    parentType: 'answer',
+    votes: 4,
+  },
+  {
+    id: '2',
+    body: 'This is a fascinating question. I\'ve been wondering about this too.',
+    createdAt: '2023-08-14T10:15:00Z',
+    authorId: '2',
+    author: users.find(u => u.id === '2')!,
+    parentId: '1',
+    parentType: 'question',
+    votes: 2,
+  },
+  {
+    id: '3',
+    body: 'I think we should also consider the gravitational effects on light.',
+    createdAt: '2023-08-16T09:30:00Z',
+    authorId: '1',
+    author: users.find(u => u.id === '1')!,
+    parentId: '1',
+    parentType: 'answer',
+    votes: 7,
+  },
+];
+
+// Mock Answers
+const answers: Answer[] = [
+  {
+    id: '1',
+    body: "Light exhibits properties of both waves and particles, which is known as wave-particle duality. As a wave, light can be described by wavelength and frequency. As particles, light is composed of photons, which have energy proportional to the frequency of the light. This dual nature was first proposed by Einstein in his explanation of the photoelectric effect, where light striking certain materials can eject electrons.\n\nIn quantum mechanics, this duality is described by quantum field theory, where photons are excitations of the electromagnetic field. The wave properties explain phenomena like interference and diffraction, while the particle properties explain the photoelectric effect and Compton scattering.",
+    createdAt: '2023-08-15T09:00:00Z',
+    updatedAt: '2023-08-15T09:00:00Z',
+    authorId: '1',
+    author: users.find(u => u.id === '1')!,
+    questionId: '1',
+    votes: 24,
+    isAccepted: true,
+    comments: comments.filter(c => c.parentId === '1' && c.parentType === 'answer'),
+  },
+  {
+    id: '2',
+    body: "The photoelectric effect proves light's particle nature. When light hits a metal surface, electrons can be ejected, but only if the light's frequency is above a threshold, regardless of intensity. This contradicts wave theory, which predicted that high intensity light of any frequency should eject electrons.\n\nYoung's double-slit experiment demonstrates wave behavior. Light passing through two slits creates an interference pattern on a screen behind, showing characteristics of waves interfering with each other.\n\nThese experiments revolutionized physics and led to the development of quantum mechanics, which accommodates both aspects of light's nature.",
+    createdAt: '2023-08-15T10:30:00Z',
+    updatedAt: '2023-08-15T10:30:00Z',
+    authorId: '2',
+    author: users.find(u => u.id === '2')!,
+    questionId: '1',
+    votes: 18,
+    isAccepted: false,
+    comments: [],
+  },
+];
+
+// Mock Questions
+export const questions: Question[] = [
+  {
+    id: '1',
+    title: 'How does light exhibit both wave and particle properties?',
+    body: "I'm struggling to understand how light can behave as both a wave and a particle. The wave theory explains interference and diffraction, while the particle theory explains the photoelectric effect. How can it be both? Can someone explain this apparent contradiction in simple terms?",
+    tags: ['physics', 'quantum-mechanics', 'light'],
+    createdAt: '2023-08-14T08:30:00Z',
+    updatedAt: '2023-08-14T08:30:00Z',
+    authorId: '3',
+    author: users.find(u => u.id === '3')!,
+    votes: 42,
+    answers: answers.filter(a => a.questionId === '1'),
+    views: 1287,
+    isResolved: true,
+  },
+  {
+    id: '2',
+    title: 'What is the significance of the Golden Ratio in nature?',
+    body: "I've noticed that the Golden Ratio (approximately 1.618) appears frequently in nature - from flower petals to spiral galaxies. Is there a scientific explanation for why this particular ratio is so prevalent? Does it serve some evolutionary or physical purpose?",
+    tags: ['mathematics', 'biology', 'patterns'],
+    createdAt: '2023-08-10T14:15:00Z',
+    updatedAt: '2023-08-10T14:15:00Z',
+    authorId: '1',
+    author: users.find(u => u.id === '1')!,
+    votes: 35,
+    answers: [],
+    views: 945,
+    isResolved: false,
+  },
+  {
+    id: '3',
+    title: 'How do black holes affect the space-time continuum?',
+    body: "I understand that black holes have extreme gravitational fields that can bend light, but I'm curious about how they affect space-time itself. What happens to space-time near a black hole's event horizon? Does time actually slow down or stop? And what does current research tell us about what happens inside a black hole?",
+    tags: ['physics', 'astronomy', 'black-holes'],
+    createdAt: '2023-08-12T11:20:00Z',
+    updatedAt: '2023-08-12T11:20:00Z',
+    authorId: '2',
+    author: users.find(u => u.id === '2')!,
+    votes: 28,
+    answers: [],
+    views: 786,
+    isResolved: false,
+  },
+  {
+    id: '4',
+    title: 'What causes biodiversity hotspots to form in certain regions?',
+    body: "Some areas of the world, like the Amazon Rainforest or the Coral Triangle, have extraordinarily high levels of biodiversity compared to other regions. What factors contribute to the formation of these biodiversity hotspots? Is it purely environmental, or do historical and evolutionary factors play a role too?",
+    tags: ['biology', 'ecology', 'biodiversity'],
+    createdAt: '2023-08-13T09:45:00Z',
+    updatedAt: '2023-08-13T09:45:00Z',
+    authorId: '3',
+    author: users.find(u => u.id === '3')!,
+    votes: 31,
+    answers: [],
+    views: 702,
+    isResolved: false,
+  },
+  {
+    id: '5',
+    title: 'How does quantum computing differ from classical computing?',
+    body: "I'm trying to understand the fundamental differences between quantum computing and classical computing. I know quantum computers use qubits instead of bits, but what makes them potentially more powerful for certain tasks? And what are the current limitations preventing widespread adoption of quantum computing?",
+    tags: ['computer-science', 'quantum-computing', 'technology'],
+    createdAt: '2023-08-09T16:30:00Z',
+    updatedAt: '2023-08-09T16:30:00Z',
+    authorId: '1',
+    author: users.find(u => u.id === '1')!,
+    votes: 39,
+    answers: [],
+    views: 1103,
+    isResolved: false,
+  },
+];
