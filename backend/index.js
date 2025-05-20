@@ -3,6 +3,7 @@ import cors from "cors";
 import connectDb from "./src/config/dbConfig.js";
 import dotenv from "dotenv";
 import authRouter from "./src/routes/authRoute.js"
+import questionRouter from "./src/routes/questionRoute.js";
 dotenv.config();
 const app = express();
 const port = process.env.PORT;
@@ -24,6 +25,7 @@ app.get("/", (req, res) => {
 });
 
 app.use("/api/auth", authRouter);
+app.use("/api/question", questionRouter);
 
 app.listen(port, () => {
     console.log(`Backend is running on port ${port}`);
