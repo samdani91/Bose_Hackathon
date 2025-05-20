@@ -12,24 +12,68 @@ const Login: React.FC = () => {
     password: '',
   });
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
+    
+    if (!formData.email.trim()) {
+      newErrors.email = 'Email is required';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = 'Please enter a valid email address';
+    }
+    
+    if (!formData.password) {
+      newErrors.password = 'Password is required';
+    } else if (formData.password.length < 6) {
+      newErrors.password = 'Password must be at least 6 characters';
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+    if (errors[name]) {
+      setErrors((prev) => ({ ...prev, [name]: '' }));
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!validateForm()) {
+      return;
+    }
+
     setLoading(true);
 
     try {
-      // In a real app, you would call your authentication API here
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
-      
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+        // credentials: 'include',     #cors e problem kore for (["*"])
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Login failed');
+      }
+
+      // Handle successful login
       toast.success('Successfully logged in!');
-      navigate('/');
-    } catch (error) {
-      toast.error('Invalid email or password');
+      
+      // Redirect based on user role or default page
+      navigate('/dashboard'); // or wherever you want to redirect after login
+      
+    } catch (error: any) {
+      toast.error(error.message || 'Invalid email or password');
     } finally {
       setLoading(false);
     }
@@ -60,6 +104,7 @@ const Login: React.FC = () => {
               required
               value={formData.email}
               onChange={handleChange}
+              error={errors.email}
             />
             <Input
               label="Password"
@@ -69,6 +114,7 @@ const Login: React.FC = () => {
               required
               value={formData.password}
               onChange={handleChange}
+              error={errors.password}
             />
           </div>
 
