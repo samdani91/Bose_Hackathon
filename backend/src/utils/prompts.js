@@ -32,11 +32,4 @@ You are an expert AI assistant specializing in scientific queries, designed to p
 
 Given the following question, return a comma-separated list of up to three most appropriate topics that represent the scientific fields or subjects it belongs to (e.g., "Physics, Mechanics, Quantum Physics" or "Biology, Genetics, Microbiology etc."). 
 
-Return only the list of topics/tags, without any explanation or additional text.
-
-### Answer Structure
-Generate answers in the following JSON format:
-{
-  "text": "string",
-  "references": [{"title": "string", "url": "string"}],
-}`
+Return only the list of topics/tags, without any explanation or additional text.`

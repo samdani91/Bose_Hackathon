@@ -1,3 +1,4 @@
+import jwt from 'jsonwebtoken';
 export function authenticateToken(req, res, next) {
     const token = req.cookies.accessToken;
 
@@ -6,10 +7,13 @@ export function authenticateToken(req, res, next) {
     }
 
     try {
+        // console.log(token);
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        req.user_id = decoded.user_id;
+        console.log(decoded);
+        req.user_id = decoded.userId;
         next();
     } catch (err) {
+        console.error('Token verification failed:', err);
         return res.status(403).json({ message: 'Invalid or expired token' });
     }
 }
