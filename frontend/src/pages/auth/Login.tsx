@@ -51,13 +51,15 @@ const Login: React.FC = () => {
     setLoading(true);
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/auth/login`, {
+      const response = await fetch(`${import.meta.env.VITE_BASE_URL}/api/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
-        // credentials: 'include',     #cors e problem kore for (["*"])
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+        }),
       });
 
       const data = await response.json();
@@ -67,6 +69,9 @@ const Login: React.FC = () => {
       }
 
       // Handle successful login
+      localStorage.setItem("accessToken", data.accessToken);
+			localStorage.setItem("isAuthenticated", "true");
+
       toast.success('Successfully logged in!');
       
       // Redirect based on user role or default page
@@ -93,7 +98,7 @@ const Login: React.FC = () => {
             </Link>
           </p>
         </div>
-        
+
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="rounded-md shadow-sm space-y-4">
             <Input
