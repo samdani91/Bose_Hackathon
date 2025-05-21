@@ -1,4 +1,3 @@
-import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import ProfilePage from './components/profile/ProfilePage';
 import SettingsPage from './components/settings/SettingsPage';

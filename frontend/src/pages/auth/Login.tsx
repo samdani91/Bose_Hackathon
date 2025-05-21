@@ -23,9 +23,26 @@ const Login: React.FC = () => {
     setLoading(true);
 
     try {
-      // In a real app, you would call your authentication API here
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
-      
+      const response = await fetch(`${import.meta.env.VITE_BASE_URL}/api/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Login failed');
+      }
+
+      localStorage.setItem("accessToken", data.accessToken);
+			localStorage.setItem("isAuthenticated", "true");
+
       toast.success('Successfully logged in!');
       navigate('/');
     } catch (error) {
@@ -49,7 +66,7 @@ const Login: React.FC = () => {
             </Link>
           </p>
         </div>
-        
+
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="rounded-md shadow-sm space-y-4">
             <Input
