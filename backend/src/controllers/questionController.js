@@ -13,6 +13,8 @@ export const createQuestion = async (req, res) => {
 
         const { title, description, images } = req.body;
 
+        console.log("images:",images);
+
 
         if (!title || !description) {
             return res.status(400).json({ message: "Title and description are required." });

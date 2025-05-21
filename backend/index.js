@@ -8,6 +8,7 @@ import voteRouter from "./src/routes/voteRoute.js";
 import cookieParser from "cookie-parser";
 import { authenticateToken } from "./src/middlewares/authMiddleware.js";
 import answerRouter from "./src/routes/answerRoute.js"
+import systemRouter from "./src/routes/systemRoute.js";
 dotenv.config();
 
 
@@ -35,6 +36,7 @@ app.use("/api/auth", authRouter);
 app.use("/api/answer",authenticateToken, answerRouter);
 app.use("/api/question", authenticateToken, questionRouter);
 app.use("/api/vote", authenticateToken, voteRouter);
+app.use("/api/system",systemRouter);
 
 app.listen(port, () => {
     console.log(`Backend is running on port ${port}`);

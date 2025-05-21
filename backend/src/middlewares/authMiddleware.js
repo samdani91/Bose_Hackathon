@@ -11,7 +11,6 @@ export function authenticateToken(req, res, next) {
 
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        console.log(decoded);
         req.user_id = decoded.userId;
         next();
     } catch (err) {

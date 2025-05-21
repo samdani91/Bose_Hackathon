@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '../components/ui/Button';
 import { Link } from '../components/ui/Link';
-import { ArrowLeft, X, Upload } from 'lucide-react';
+import { ArrowLeft, X, Upload, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 
@@ -9,10 +9,10 @@ export const AskQuestionPage: React.FC = () => {
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
   const [images, setImages] = useState<File[]>([]);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
-
 
   const [errors, setErrors] = useState({
     title: '',
@@ -49,20 +49,24 @@ export const AskQuestionPage: React.FC = () => {
       if (images.length + newImages.length > MAX_IMAGES) {
         setErrors({
           ...errors,
-          images: `You can upload a maximum of ${MAX_IMAGES} images`
+          images: `You can upload a maximum of ${MAX_IMAGES} images`,
         });
         return;
       }
 
       setImages([...images, ...newImages]);
+      setImagePreviews([...imagePreviews, ...newImages.map((file) => URL.createObjectURL(file))]);
       setErrors({ ...errors, images: '' });
     }
   };
 
   const removeImage = (index: number) => {
     const newImages = [...images];
+    const newPreviews = [...imagePreviews];
     newImages.splice(index, 1);
+    newPreviews.splice(index, 1);
     setImages(newImages);
+    setImagePreviews(newPreviews);
   };
 
   const validateForm = () => {
@@ -99,49 +103,117 @@ export const AskQuestionPage: React.FC = () => {
     return isValid;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const uploadImagesToCloudinary = async (files: File[]): Promise<string[]> => {
+    const uploadedUrls: string[] = [];
 
-    if (validateForm()) {
-      setIsUploading(true);
+    for (const file of files) {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('upload_preset', 'hackathonImages');
+      formData.append('cloud_name', 'dt3catuxy');
+
       try {
-        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/question/create`, {
+        const response = await fetch('https://api.cloudinary.com/v1_1/dt3catuxy/image/upload', {
           method: 'POST',
+          body: formData,
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error('Failed to upload image to Cloudinary');
+        }
+        uploadedUrls.push(data.secure_url);
+        console.log(uploadedUrls)
+      } catch (error) {
+        throw new Error('Error uploading image to Cloudinary');
+      }
+    }
+
+    return uploadedUrls;
+  };
+
+  const deleteImagesFromCloudinary = async (urls: string[]) => {
+    for (const url of urls) {
+      try {
+        await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/system/deleteImage`, {
+          method: 'DELETE',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({
-            title,
-            description: body,
-            images: images.map((image) => image.name),
-          }),
-          credentials: 'include',
+          body: JSON.stringify({ image: url }),
         });
-
-        console.log('Response:', response);
-
-        const data = await response.json();
-
-        if (!response.ok) {
-          throw new Error(data.message || 'Question submit failed');
-        }
-        toast.success('Questiion submitted successfully!');
-
-        setTitle('');
-        setBody('');
-        setImages([]);
-        navigate('/');
       } catch (error) {
-        console.error('Error submitting question:', error);
-        toast.error('There was an error submitting your question. Please try again.');
-      } finally {
-        setIsUploading(false);
+        console.error('Error deleting image from Cloudinary:', error);
       }
     }
   };
 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!validateForm()) {
+      return;
+    }
+
+    setIsUploading(true);
+    toast.info(
+      <div>
+        <p>Uploading question...</p>
+      </div>,
+      {
+        icon: <Loader2 className="animate-spin" />,
+        cancel: !isUploading,
+      }
+    );
+
+    let imageUrls: string[] = [];
+
+    try {
+      // Upload images to Cloudinary if any
+      if (images.length > 0) {
+        imageUrls = await uploadImagesToCloudinary(images);
+      }
+
+      // Submit question with image URLs
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/question/create`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title,
+          description: body,
+          images: imageUrls,
+        }),
+        credentials: 'include',
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Question submit failed');
+      }
+
+      toast.success('Question submitted successfully!');
+      setTitle('');
+      setBody('');
+      setImages([]);
+      setImagePreviews([]);
+      navigate('/');
+    } catch (error) {
+      // Cleanup uploaded images if submission fails
+      if (imageUrls.length > 0) {
+        await deleteImagesFromCloudinary(imageUrls);
+      }
+      console.error('Error submitting question:', error);
+      toast.error('There was an error submitting your question. Please try again.');
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 h-screen">
       <div className="mb-6">
         <Link to="/">
           <Button variant="outline" size="sm" className="flex items-center gap-2">
@@ -176,8 +248,9 @@ export const AskQuestionPage: React.FC = () => {
             <input
               type="text"
               id="title"
-              className={`block w-full rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm border ${errors.title ? 'border-rose-300' : 'border-slate-300'
-                } px-4 py-2`}
+              className={`block w-full rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm border ${
+                errors.title ? 'border-rose-300' : 'border-slate-300'
+              } px-4 py-2`}
               value={title}
               onChange={(e) => {
                 setTitle(e.target.value);
@@ -188,9 +261,7 @@ export const AskQuestionPage: React.FC = () => {
               placeholder="e.g., How does quantum entanglement work?"
               maxLength={MAX_TITLE_LENGTH}
             />
-            {errors.title && (
-              <p className="mt-1 text-sm text-rose-600">{errors.title}</p>
-            )}
+            {errors.title && <p className="mt-1 text-sm text-rose-600">{errors.title}</p>}
           </div>
 
           {/* Body Section */}
@@ -209,8 +280,9 @@ export const AskQuestionPage: React.FC = () => {
             <textarea
               id="body"
               rows={8}
-              className={`block w-full rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm border ${errors.body ? 'border-rose-300' : 'border-slate-300'
-                } px-4 py-2`}
+              className={`block w-full rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm border ${
+                errors.body ? 'border-rose-300' : 'border-slate-300'
+              } px-4 py-2`}
               value={body}
               onChange={(e) => {
                 setBody(e.target.value);
@@ -221,9 +293,7 @@ export const AskQuestionPage: React.FC = () => {
               placeholder="Explain your question in detail..."
               maxLength={MAX_BODY_LENGTH}
             />
-            {errors.body && (
-              <p className="mt-1 text-sm text-rose-600">{errors.body}</p>
-            )}
+            {errors.body && <p className="mt-1 text-sm text-rose-600">{errors.body}</p>}
           </div>
 
           {/* Image Upload Section */}
@@ -257,16 +327,14 @@ export const AskQuestionPage: React.FC = () => {
                 {images.length >= MAX_IMAGES ? 'Maximum images reached' : 'Upload Images'}
               </Button>
 
-              {errors.images && (
-                <p className="mt-1 text-sm text-rose-600">{errors.images}</p>
-              )}
+              {errors.images && <p className="mt-1 text-sm text-rose-600">{errors.images}</p>}
 
               {images.length > 0 && (
                 <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                   {images.map((image, index) => (
                     <div key={index} className="relative group rounded-md overflow-hidden border border-slate-200">
                       <img
-                        src={URL.createObjectURL(image)}
+                        src={imagePreviews[index]}
                         alt={`Preview ${index + 1}`}
                         className="w-full h-32 object-cover"
                       />
@@ -278,9 +346,7 @@ export const AskQuestionPage: React.FC = () => {
                         <X className="h-4 w-4" />
                       </button>
                       <div className="p-2 bg-slate-50">
-                        <p className="text-xs text-slate-600 truncate">
-                          {image.name}
-                        </p>
+                        <p className="text-xs text-slate-600 truncate">{image.name}</p>
                         <p className="text-xs text-slate-500">
                           {(image.size / 1024).toFixed(1)} KB
                         </p>
