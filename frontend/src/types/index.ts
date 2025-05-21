@@ -1,12 +1,9 @@
 export interface User {
   id: string;
   username: string;
-  displayName: string;
   email: string;
   avatarUrl?: string;
-  reputation: number;
   joinedAt: string;
-  badges: Badge[];
 }
 
 export interface Badge {
@@ -17,18 +14,17 @@ export interface Badge {
 }
 
 export interface Question {
-  id: string;
-  title: string;
-  body: string;
-  tags: string[];
-  createdAt: string;
-  updatedAt: string;
-  authorId: string;
-  author: User;
-  votes: number;
-  answers: Answer[];
-  views: number;
-  isResolved: boolean;
+  createdAt: string,
+  description: string,
+  downVotes: number,
+  images: string[],
+  tags: string[],
+  title: string,
+  updatedAt: string,
+  upVotes: number,
+  user_id: string,
+  viewsCount: number,
+  _id: string,
 }
 
 export interface Answer {

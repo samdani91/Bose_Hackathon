@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { MessageSquare, ArrowUp, ArrowDown } from 'lucide-react';
-import type { Question } from '../../types';
+import type { Question, User } from '../../types';
 import { Badge } from '../ui/Badge';
 import { Link } from '../ui/Link';
 import { Card, CardContent } from '../ui/Card';
+import { toast } from 'sonner';
 
 interface QuestionCardProps {
   question: Question;
@@ -40,6 +41,51 @@ const formatRelativeDate = (date: string | Date): string => {
 };
 
 export const QuestionCard: React.FC<QuestionCardProps> = ({ question }) => {
+
+  const [user, setUser] = useState<User>();
+
+  const fetchUser = async () => {
+    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/auth/user`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+      },
+      credentials: 'include',
+    });
+    if (!response.ok) {
+      toast.error('Failed to fetch question creator');
+      return;
+    }
+    const data = await response.json();
+    console.log('Fetched user', data.user);
+    const newUser: User = {
+      id: data.user._id,
+      username: data.user.name,
+      email: data.user.email,
+      avatarUrl: data.user.image,
+      joinedAt: data.user.createdAt,
+    };
+    setUser(newUser);
+    // const newQuestions = (Array.isArray(data.questions) ? data.questions : []).map(q => ({
+    //   id: q._id,
+    //   title: q.title,
+    //   body: q.description,
+    //   tags: q.tags || [],
+    //   createdAt: q.createdAt,
+    //   updatedAt: q.updatedAt,
+    //   authorId: q.user_id,
+    //   author: { id: q.user_id, email: 'Unknown' }, // Backend doesn't provide email
+    //   votes: (q.upvotes || 0) - (q.downvotes || 0),
+    //   answers: [], // Backend doesn't provide answers
+    //   views: q.viewsCount || 0,
+    //   isResolved: false, // Backend doesn't provide isResolved
+    // }));
+  };
+
+  useEffect(() => {
+    fetchUser();
+  }, []);
   return (
     <Card className="mb-4 transition-shadow hover:shadow-md">
       <CardContent className="p-0">
@@ -50,17 +96,17 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({ question }) => {
               <button className="text-slate-400 hover:text-indigo-500 focus:outline-none transition-colors">
                 <ArrowUp className="h-6 w-6" />
               </button>
-              <span className="text-lg font-medium text-slate-700 my-1">{question.votes}</span>
+              <span className="text-lg font-medium text-slate-700 my-1">{question.upVotes || 0}</span>
               <button className="text-slate-400 hover:text-slate-500 focus:outline-none transition-colors">
                 <ArrowDown className="h-6 w-6" />
               </button>
             </div>
-            <div className="flex items-center text-slate-500 text-sm mt-3">
+            {/* <div className="flex items-center text-slate-500 text-sm mt-3">
               <MessageSquare className="h-4 w-4 mr-1" />
               <span>{question.answers.length}</span>
-            </div>
+            </div> */}
             <div className="text-slate-500 text-sm">
-              <span>{question.views} views</span>
+              <span>{question.viewsCount} views</span>
             </div>
           </div>
 
@@ -68,12 +114,12 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({ question }) => {
           <div className="col-span-5 p-6">
             <div>
               <Link
-                to={`/question/${question.id}`}
+                to={`/question/${question._id}`}
                 className="text-lg font-medium text-indigo-600 hover:text-indigo-800 line-clamp-2"
               >
                 {question.title}
               </Link>
-              <p className="mt-2 text-slate-600 line-clamp-3">{question.body}</p>
+              <p className="mt-2 text-slate-600 line-clamp-3">{question.description}</p>
             </div>
 
             <div className="mt-4 grid grid-cols-3 items-center">
@@ -92,22 +138,22 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({ question }) => {
               <div className="col-span-1 flex flex-col items-end text-sm">
                 <div className="flex items-center">
                   <div className="flex-shrink-0">
-                    {question.author.avatarUrl ? (
+                    {user?.avatarUrl ? (
                       <img
                         className="h-6 w-6 rounded-full"
-                        src={question.author.avatarUrl}
-                        alt={question.author.displayName}
+                        src={user?.avatarUrl}
+                        alt={user?.username}
                       />
                     ) : (
                       <div className="h-6 w-6 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-800 font-medium">
-                        {question.author.displayName.charAt(0)}
+                        {user?.username.charAt(0)}
                       </div>
                     )}
                   </div>
                   <div className='flex flex-col'>
                     <div className="ml-2">
-                      <Link to={`/user/${question.author.id}`} className="text-slate-700 hover:text-indigo-600">
-                        {question.author.displayName}
+                      <Link to={`/user/${user?.id}`} className="text-slate-700 hover:text-indigo-600">
+                        {user?.username}
                       </Link>
                     </div>
                     <div className="mt-1 ml-2 text-slate-500 text-xs">

@@ -15,40 +15,39 @@ export const QuestionList: React.FC<QuestionListProps> = ({ questions: initialQu
   const [searchQuery, setSearchQuery] = useState('');
 
   const handleSort = (sortType: 'newest' | 'votes' | 'activity') => {
-    setSortBy(sortType);
-    
-    const sortedQuestions = [...questions];
-    
-    if (sortType === 'newest') {
-      sortedQuestions.sort((a, b) => 
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-      );
-    } else if (sortType === 'votes') {
-      sortedQuestions.sort((a, b) => b.votes - a.votes);
-    } else if (sortType === 'activity') {
-      sortedQuestions.sort((a, b) => 
-        new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
-      );
-    }
-    
-    setQuestions(sortedQuestions);
+    // setSortBy(sortType);
+
+    // const sortedQuestions = [...questions];
+
+    // if (sortType === 'newest') {
+    //   sortedQuestions.sort((a, b) =>
+    //     new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    //   );
+    // } else if (sortType === 'votes') {
+    //   sortedQuestions.sort((a, b) => b.votes - a.votes);
+    // } else if (sortType === 'activity') {
+    //   sortedQuestions.sort((a, b) =>
+    //     new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+    //   );
+    // }
+
+    // setQuestions(sortedQuestions);
   };
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!searchQuery.trim()) {
-      setQuestions(initialQuestions);
       return;
     }
-    
-    const filtered = initialQuestions.filter(q => 
-      q.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-      q.body.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      q.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
-    );
-    
-    setQuestions(filtered);
+
+    // const filtered = initialQuestions.filter(q =>
+    //   q.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    //   q.body.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    //   q.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
+    // );
+
+    // setQuestions(filtered);
   };
 
   return (
@@ -69,10 +68,10 @@ export const QuestionList: React.FC<QuestionListProps> = ({ questions: initialQu
               />
             </div>
           </form>
-          
+
           <div className="flex items-center gap-2">
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               size="sm"
               onClick={() => setShowFilters(!showFilters)}
               className="flex items-center"
@@ -80,8 +79,8 @@ export const QuestionList: React.FC<QuestionListProps> = ({ questions: initialQu
               <Filter className="h-4 w-4 mr-1" />
               Filters
             </Button>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               size="sm"
               onClick={() => setShowFilters(!showFilters)}
               className="flex items-center"
@@ -91,7 +90,7 @@ export const QuestionList: React.FC<QuestionListProps> = ({ questions: initialQu
             </Button>
           </div>
         </div>
-        
+
         {showFilters && (
           <div className="mt-4 pt-4 border-t border-slate-200">
             <div className="flex flex-wrap gap-2">
@@ -120,11 +119,11 @@ export const QuestionList: React.FC<QuestionListProps> = ({ questions: initialQu
           </div>
         )}
       </div>
-      
+
       <div>
-        {questions.length > 0 ? (
+        {questions ? (
           questions.map(question => (
-            <QuestionCard key={question.id} question={question} />
+            <QuestionCard key={question._id} question={question} />
           ))
         ) : (
           <div className="text-center py-10 bg-white rounded-lg shadow-sm">

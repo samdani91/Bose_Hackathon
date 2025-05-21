@@ -191,7 +191,11 @@ export const getUser = async (req, res) => {
 
         return res.status(200).json({
             user: {
-                email: existingUser.email
+                email: existingUser.email,
+                name: existingUser.name,
+                id: existingUser._id,
+                createdAt: existingUser.createdAt,
+                image: existingUser.image,
             },
         })
 
