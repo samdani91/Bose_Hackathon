@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
-import { LogIn } from 'lucide-react';
+import { LogIn, Eye, EyeOff } from 'lucide-react';
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
@@ -13,12 +13,13 @@ const Login: React.FC = () => {
   });
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     if (localStorage.getItem("isAuthenticatedToFactRush") === "true") {
       navigate("/", { replace: true });
     }
-  }, []);
+  }, [navigate]);
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
@@ -75,14 +76,11 @@ const Login: React.FC = () => {
         throw new Error(data.message || 'Login failed');
       }
 
-      // Handle successful login
       localStorage.setItem("accessToken", data.accessToken);
       localStorage.setItem("isAuthenticatedToFactRush", "true");
 
       toast.success('Successfully logged in!');
-
       navigate('/');
-
     } catch (error: any) {
       toast.error(error.message || 'Invalid email or password');
     } finally {
@@ -117,16 +115,24 @@ const Login: React.FC = () => {
               onChange={handleChange}
               error={errors.email}
             />
-            <Input
-              label="Password"
-              name="password"
-              type="password"
-              autoComplete="current-password"
-              required
-              value={formData.password}
-              onChange={handleChange}
-              error={errors.password}
-            />
+            <div className="relative">
+              <Input
+                label="Password"
+                name="password"
+                type={showPassword ? 'text' : 'password'}
+                autoComplete="current-password"
+                required
+                value={formData.password}
+                onChange={handleChange}
+                error={errors.password}
+              />
+              <div
+                className="absolute inset-y-0 right-3  top-6 flex items-center cursor-pointer text-slate-500"
+                onClick={() => setShowPassword((prev) => !prev)}
+              >
+                {showPassword ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+              </div>
+            </div>
           </div>
 
           <div className="flex items-center justify-between">

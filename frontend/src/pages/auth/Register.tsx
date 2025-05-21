@@ -3,22 +3,29 @@ import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
-import { UserPlus } from 'lucide-react';
+import { UserPlus, Eye, EyeOff } from 'lucide-react';
 
 const Register: React.FC = () => {
   const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     password: '',
     confirmPassword: '',
   });
+
+  const [showPassword, setShowPassword] = useState({
+    password: false,
+    confirm: false,
+  });
+
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (localStorage.getItem("isAuthenticatedToFactRush") === "true"){
-      navigate("/", {replace: true});
+      navigate("/", { replace: true });
     }
   }, []);
 
@@ -59,35 +66,27 @@ const Register: React.FC = () => {
     }
   };
 
+  const togglePasswordVisibility = (field: 'password' | 'confirm') => {
+    setShowPassword((prev) => ({ ...prev, [field]: !prev[field] }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!validateForm()) {
-      return;
-    }
+    if (!validateForm()) return;
 
     setLoading(true);
-
     try {
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/auth/register`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name: formData.name,
-          email: formData.email,
-          password: formData.password,
-          confirmPassword: formData.confirmPassword
-        }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
         credentials: 'include',
       });
 
       const data = await response.json();
 
-      if (!response.ok) {
-        throw new Error(data.message || 'Registration failed');
-      }
+      if (!response.ok) throw new Error(data.message || 'Registration failed');
 
       toast.success('Registration successful! Please sign in.');
       navigate('/login');
@@ -136,26 +135,56 @@ const Register: React.FC = () => {
               error={errors.email}
               placeholder="example@gmail.com"
             />
-            <Input
-              label="Password"
-              name="password"
-              type="password"
-              autoComplete="new-password"
-              required
-              value={formData.password}
-              onChange={handleChange}
-              error={errors.password}
-            />
-            <Input
-              label="Confirm Password"
-              name="confirmPassword"
-              type="password"
-              autoComplete="new-password"
-              required
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              error={errors.confirmPassword}
-            />
+
+            {/* Password with toggle */}
+            <div className="relative">
+              <Input
+                label="Password"
+                name="password"
+                type={showPassword.password ? 'text' : 'password'}
+                autoComplete="new-password"
+                required
+                value={formData.password}
+                onChange={handleChange}
+                error={errors.password}
+              />
+              <button
+                type="button"
+                className="absolute right-3 top-[34px] text-slate-400 hover:text-slate-600"
+                onClick={() => togglePasswordVisibility('password')}
+              >
+                {showPassword.password ? (
+                  <Eye className="h-4 w-4" />
+                ) : (
+                  <EyeOff className="h-4 w-4" />
+                )}
+              </button>
+            </div>
+
+            {/* Confirm Password with toggle */}
+            <div className="relative">
+              <Input
+                label="Confirm Password"
+                name="confirmPassword"
+                type={showPassword.confirm ? 'text' : 'password'}
+                autoComplete="new-password"
+                required
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                error={errors.confirmPassword}
+              />
+              <button
+                type="button"
+                className="absolute right-3 top-[34px] text-slate-400 hover:text-slate-600"
+                onClick={() => togglePasswordVisibility('confirm')}
+              >
+                {showPassword.confirm ? (
+                  <Eye className="h-4 w-4" />
+                ) : (
+                  <EyeOff className="h-4 w-4" />
+                )}
+              </button>
+            </div>
           </div>
 
           <Button

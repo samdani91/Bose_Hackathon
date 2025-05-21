@@ -180,3 +180,46 @@ export const getUser = async (req, res) => {
         })
     }
 }
+
+export const changePassword = async (req, res) => {
+    try {
+        const userId = req.user_id;
+
+        if (!userId) {
+            return res.status(401).json({ message: "You are not authorized to change the password!" });
+        }
+
+        const { currentPassword, newPassword } = req.body;
+
+        const existingUser = await User.findById(userId);
+
+        if (!existingUser) {
+            return res.status(404).json({
+                message: "User not found."
+            })
+        }
+
+        const isMatch = await bcrypt.compare(currentPassword, existingUser.password);
+
+        if (!isMatch) {
+            return res.status(404).json({
+                message: "Incorrect current password."
+            })
+        }
+
+        const salt = await bcrypt.genSalt(Number(process.env.SALT));
+        const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+        await User.findByIdAndUpdate(userId, { password: hashedPassword });
+
+        return res.status(200).json({
+            message: "Password changed successfully.",
+        })
+
+    } catch (err) {
+        console.log(err);
+        return res.status(500).json({
+            message: "Internal server error. Please try again."
+        })
+    }
+}
