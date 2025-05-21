@@ -4,13 +4,15 @@ const setCookies = (res, accessToken, accessTokenExp) => {
     res.cookie("accessToken", accessToken, {
         httpOnly: true,
         maxAge: accessTokenMaxAge,
-        secure: true
+        secure: true,
+        sameSite: 'None'
     });
 
     res.cookie('isAuthenticated', true, {
         maxAge: accessTokenMaxAge,
-        secure: false,
-        httpOnly: false
+        secure: true,
+        httpOnly: false,
+        sameSite: 'None',
     });
 };
 

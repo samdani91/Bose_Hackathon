@@ -66,6 +66,7 @@ const Login: React.FC = () => {
           email: formData.email,
           password: formData.password,
         }),
+        credentials: 'include',
       });
 
       const data = await response.json();

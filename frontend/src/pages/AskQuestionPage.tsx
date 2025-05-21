@@ -1,32 +1,51 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '../components/ui/Button';
 import { Link } from '../components/ui/Link';
 import { ArrowLeft, X, Upload } from 'lucide-react';
+import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
 
 export const AskQuestionPage: React.FC = () => {
-  // Form state
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
   const [images, setImages] = useState<File[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const navigate = useNavigate();
 
-  // Error state
+
   const [errors, setErrors] = useState({
     title: '',
     body: '',
     images: '',
   });
 
-  // Constants
   const MAX_TITLE_LENGTH = 150;
   const MAX_BODY_LENGTH = 3000;
   const MAX_IMAGES = 3;
 
+  useEffect(() => {
+    if (errors.title) {
+      setIsUploading(false);
+      toast.error(errors.title);
+      setErrors((prev) => ({ ...prev, title: '' }));
+    }
+    if (errors.body) {
+      setIsUploading(false);
+      toast.error(errors.body);
+      setErrors((prev) => ({ ...prev, body: '' }));
+    }
+    if (errors.images) {
+      setIsUploading(false);
+      toast.error(errors.images);
+      setErrors((prev) => ({ ...prev, images: '' }));
+    }
+  }, [errors]);
+
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const newImages = Array.from(e.target.files);
-      
+
       if (images.length + newImages.length > MAX_IMAGES) {
         setErrors({
           ...errors,
@@ -34,9 +53,9 @@ export const AskQuestionPage: React.FC = () => {
         });
         return;
       }
-      
+
       setImages([...images, ...newImages]);
-      setErrors({...errors, images: ''});
+      setErrors({ ...errors, images: '' });
     }
   };
 
@@ -52,9 +71,9 @@ export const AskQuestionPage: React.FC = () => {
       body: '',
       images: '',
     };
-    
+
     let isValid = true;
-    
+
     if (title.trim().length < 15) {
       newErrors.title = 'Title must be at least 15 characters';
       isValid = false;
@@ -62,7 +81,7 @@ export const AskQuestionPage: React.FC = () => {
       newErrors.title = `Title must be less than ${MAX_TITLE_LENGTH} characters`;
       isValid = false;
     }
-    
+
     if (body.trim().length < 30) {
       newErrors.body = 'Body must be at least 30 characters';
       isValid = false;
@@ -70,38 +89,51 @@ export const AskQuestionPage: React.FC = () => {
       newErrors.body = `Body must be less than ${MAX_BODY_LENGTH} characters`;
       isValid = false;
     }
-    
+
     if (images.length > MAX_IMAGES) {
       newErrors.images = `You can upload a maximum of ${MAX_IMAGES} images`;
       isValid = false;
     }
-    
+
     setErrors(newErrors);
     return isValid;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (validateForm()) {
       setIsUploading(true);
-      
       try {
-        // In a real app, this would submit to an API
-        console.log({ title, body, images });
-        
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        
-        alert('Question submitted successfully!');
-        
-        // Reset form
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/question/create`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            title,
+            description: body,
+            images: images.map((image) => image.name),
+          }),
+          credentials: 'include',
+        });
+
+        console.log('Response:', response);
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.message || 'Question submit failed');
+        }
+        toast.success('Questiion submitted successfully!');
+
         setTitle('');
         setBody('');
         setImages([]);
+        navigate('/');
       } catch (error) {
         console.error('Error submitting question:', error);
-        alert('There was an error submitting your question. Please try again.');
+        toast.error('There was an error submitting your question. Please try again.');
       } finally {
         setIsUploading(false);
       }
@@ -126,7 +158,7 @@ export const AskQuestionPage: React.FC = () => {
             Share your knowledge and help others by asking a clear, detailed question
           </p>
         </div>
-        
+
         <form onSubmit={handleSubmit} className="p-6 space-y-8">
           {/* Title Section */}
           <div className="space-y-2">
@@ -144,14 +176,13 @@ export const AskQuestionPage: React.FC = () => {
             <input
               type="text"
               id="title"
-              className={`block w-full rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm border ${
-                errors.title ? 'border-rose-300' : 'border-slate-300'
-              } px-4 py-2`}
+              className={`block w-full rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm border ${errors.title ? 'border-rose-300' : 'border-slate-300'
+                } px-4 py-2`}
               value={title}
               onChange={(e) => {
                 setTitle(e.target.value);
                 if (e.target.value.length >= 15 && e.target.value.length <= MAX_TITLE_LENGTH) {
-                  setErrors({...errors, title: ''});
+                  setErrors({ ...errors, title: '' });
                 }
               }}
               placeholder="e.g., How does quantum entanglement work?"
@@ -161,7 +192,7 @@ export const AskQuestionPage: React.FC = () => {
               <p className="mt-1 text-sm text-rose-600">{errors.title}</p>
             )}
           </div>
-          
+
           {/* Body Section */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
@@ -178,14 +209,13 @@ export const AskQuestionPage: React.FC = () => {
             <textarea
               id="body"
               rows={8}
-              className={`block w-full rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm border ${
-                errors.body ? 'border-rose-300' : 'border-slate-300'
-              } px-4 py-2`}
+              className={`block w-full rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm border ${errors.body ? 'border-rose-300' : 'border-slate-300'
+                } px-4 py-2`}
               value={body}
               onChange={(e) => {
                 setBody(e.target.value);
                 if (e.target.value.length >= 30 && e.target.value.length <= MAX_BODY_LENGTH) {
-                  setErrors({...errors, body: ''});
+                  setErrors({ ...errors, body: '' });
                 }
               }}
               placeholder="Explain your question in detail..."
@@ -195,7 +225,7 @@ export const AskQuestionPage: React.FC = () => {
               <p className="mt-1 text-sm text-rose-600">{errors.body}</p>
             )}
           </div>
-          
+
           {/* Image Upload Section */}
           <div className="space-y-2">
             <label className="block text-sm font-medium text-slate-700">
@@ -204,7 +234,7 @@ export const AskQuestionPage: React.FC = () => {
             <p className="text-xs text-slate-500">
               Add up to {MAX_IMAGES} images to help explain your question
             </p>
-            
+
             <div className="mt-2">
               <input
                 type="file"
@@ -215,7 +245,7 @@ export const AskQuestionPage: React.FC = () => {
                 className="hidden"
                 disabled={images.length >= MAX_IMAGES}
               />
-              
+
               <Button
                 type="button"
                 variant="outline"
@@ -226,11 +256,11 @@ export const AskQuestionPage: React.FC = () => {
                 <Upload className="h-4 w-4" />
                 {images.length >= MAX_IMAGES ? 'Maximum images reached' : 'Upload Images'}
               </Button>
-              
+
               {errors.images && (
                 <p className="mt-1 text-sm text-rose-600">{errors.images}</p>
               )}
-              
+
               {images.length > 0 && (
                 <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                   {images.map((image, index) => (

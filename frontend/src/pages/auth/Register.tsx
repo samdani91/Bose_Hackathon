@@ -80,6 +80,7 @@ const Register: React.FC = () => {
           password: formData.password,
           confirmPassword: formData.confirmPassword
         }),
+        credentials: 'include',
       });
 
       const data = await response.json();
