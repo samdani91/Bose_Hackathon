@@ -10,12 +10,12 @@ const VoteSchema = new mongoose.Schema(
     question_id: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Question",
-      required: true,
+      required: false,
     },
     answer_id: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Answer",
-      required: true,
+      required: false,
     },
     type: {
       type: String,

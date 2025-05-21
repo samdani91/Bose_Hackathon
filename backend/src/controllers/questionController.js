@@ -1,10 +1,11 @@
 import Question from "../models/Question.js";
 import { generateTagPrompt } from "../utils/prompts.js";
+import axios from "axios";
 
 export const createQuestion = async (req, res) => {
     try {
 
-        const userId = req.user?._id;
+        const userId = req.user_id;
 
         if (!userId) {
             return res.status(401).json({ message: "Unauthorized. User ID missing from cookies." });
@@ -46,7 +47,7 @@ export const createQuestion = async (req, res) => {
 
 export const updateQuestion = async (req, res) => {
     try {
-        const userId = req.user?._id;
+        const userId = req.user_id;
         const { id } = req.params;
         const { title, description, images } = req.body;
 
@@ -89,7 +90,7 @@ export const updateQuestion = async (req, res) => {
 
 export const deleteQuestion = async (req, res) => {
     try {
-        const userId = req.user?._id;
+        const userId = req.user_id;
         const { id } = req.params;
 
         const question = await Question.findById(id);

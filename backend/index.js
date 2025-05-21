@@ -32,7 +32,7 @@ app.get("/", (req, res) => {
 });
 
 app.use("/api/auth", authRouter);
-app.use("/api/answer", answerRouter);
+app.use("/api/answer",authenticateToken, answerRouter);
 app.use("/api/question", authenticateToken,questionRouter);
 app.use("/api/vote", authenticateToken,voteRouter);
 

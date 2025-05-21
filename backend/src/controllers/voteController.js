@@ -1,11 +1,10 @@
 import Vote from "../models/Vote.js";
-import Answer from "../models/Answer.js";
 import { downVoteQuestion, upVoteQuestion } from "./questionController.js";
 import { downVoteAnswer, upVoteAnswer } from "./answerController.js";
 
 export async function upvote(req, res) {
     try {
-        const userId = req.user?._id;
+        const userId = req.user_id;
         if (!userId) {
             return res.status(401).json({ message: "Unauthorized. User ID missing from cookies." });
         }
@@ -37,7 +36,7 @@ export async function upvote(req, res) {
 
 export async function downvote(req, res) {
     try {
-        const userId = req.user?._id;
+        const userId = req.user_id;
         if (!userId) {
             return res.status(401).json({ message: "Unauthorized. User ID missing from cookies." });
         }

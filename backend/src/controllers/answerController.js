@@ -57,7 +57,12 @@ export const generateInstantAnswer = async (req, res) => {
 
 export const createAnswer = async (req, res) => {
   try {
-    const { text, questionId, userId, references } = req.body;
+    const userId = req.user_id;
+
+    if (!userId) {
+      return res.status(401).json({ message: "Unauthorized. User ID missing from cookies." });
+    }
+    const { text, questionId, references } = req.body;
 
     if (!text || !questionId || !userId) {
       return res.status(400).json({ error: 'Text, questionId, and userId are required' });

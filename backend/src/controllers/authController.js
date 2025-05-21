@@ -6,7 +6,7 @@ import setCookies from "../utils/setCookies.js";
 export const signUp = async (req, res) => {
     try {
         const { name, email, password, confirmPassword } = req.body;
-        console.log(req.body);
+
         if(!name){
             return res.status(400).json({
                 message: "Name is required."
