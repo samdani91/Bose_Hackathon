@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Input } from '../../components/ui/Input';
@@ -14,21 +14,27 @@ const Login: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  useEffect(() => {
+    if (localStorage.getItem("isAuthenticatedToFactRush") === "true") {
+      navigate("/", { replace: true });
+    }
+  }, []);
+
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
-    
+
     if (!formData.email.trim()) {
       newErrors.email = 'Email is required';
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       newErrors.email = 'Please enter a valid email address';
     }
-    
+
     if (!formData.password) {
       newErrors.password = 'Password is required';
     } else if (formData.password.length < 6) {
       newErrors.password = 'Password must be at least 6 characters';
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -43,7 +49,7 @@ const Login: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
@@ -51,7 +57,7 @@ const Login: React.FC = () => {
     setLoading(true);
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_BASE_URL}/api/auth/login`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -70,13 +76,12 @@ const Login: React.FC = () => {
 
       // Handle successful login
       localStorage.setItem("accessToken", data.accessToken);
-			localStorage.setItem("isAuthenticated", "true");
+      localStorage.setItem("isAuthenticatedToFactRush", "true");
 
       toast.success('Successfully logged in!');
-      
-      // Redirect based on user role or default page
-      navigate('/dashboard'); // or wherever you want to redirect after login
-      
+
+      navigate('/');
+
     } catch (error: any) {
       toast.error(error.message || 'Invalid email or password');
     } finally {

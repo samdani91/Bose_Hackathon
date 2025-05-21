@@ -1,6 +1,7 @@
 import React from 'react';
 import Navbar from '../components/layout/Navbar';
 import Footer from '../components/layout/Footer';
+import { Toaster } from 'sonner';
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -12,6 +13,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       <Navbar />
       <main className="flex-grow">
         {children}
+        <Toaster richColors/>
       </main>
       <Footer />
     </div>

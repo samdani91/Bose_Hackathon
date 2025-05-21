@@ -8,6 +8,7 @@ import { Button } from '../ui/Button';
 const Navbar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
+  const [loggedIn, setLoggedIn] = useState(localStorage.getItem("isAuthenticatedToFactRush") === "true");
 
   return (
     <nav className="bg-white border-b border-slate-200 sticky top-0 z-50">
@@ -16,18 +17,18 @@ const Navbar: React.FC = () => {
           <div className="flex items-center">
             <Link to="/" className="flex-shrink-0 flex items-center">
               <MessageCircle className="h-8 w-8 text-indigo-600" />
-              <span className="ml-2 text-xl font-bold text-slate-800">QueryStack</span>
+              <span className="ml-2 text-xl font-bold text-slate-800">FactRush</span>
             </Link>
             <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
               <Link to="/" className="border-indigo-500 text-slate-900 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
                 Home
               </Link>
-              <Link to="/tags" className="border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+              {/* <Link to="/tags" className="border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
                 Tags
               </Link>
               <Link to="/users" className="border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
                 Users
-              </Link>
+              </Link> */}
             </div>
           </div>
           <div className="hidden sm:ml-6 sm:flex items-center">
@@ -44,63 +45,67 @@ const Navbar: React.FC = () => {
             <button className="ml-3 p-1 rounded-full text-slate-400 hover:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500">
               <Bell className="h-5 w-5" aria-hidden="true" />
             </button>
-            <div className="ml-3 relative">
-              <Dropdown
-                trigger={
-                  <button className="cursor-pointer flex text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-100 p-1 hover:bg-slate-200 transition-colors">
-                    <User className="h-5 w-5 text-slate-500" aria-hidden="true" />
-                  </button>
-                }
+            {loggedIn ? (
+              <div className="ml-3 relative">
+                <Dropdown
+                  trigger={
+                    <button className="cursor-pointer flex text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-100 p-1 hover:bg-slate-200 transition-colors">
+                      <User className="h-5 w-5 text-slate-500" aria-hidden="true" />
+                    </button>
+                  }
+                >
+                  {(close) => (
+                    <>
+                      <div className="py-1">
+                        <DropdownItem
+                          onClick={() => {
+                            navigate('/profile');
+                            close();
+                          }}
+                          className="flex items-center cursor-pointer"
+                        >
+                          <UserCircle className="mr-2 h-4 w-4" />
+                          Profile
+                        </DropdownItem>
+                        <DropdownItem
+                          onClick={() => {
+                            navigate('/settings');
+                            close();
+                          }}
+                          className="flex items-center cursor-pointer"
+                        >
+                          <Settings className="mr-2 h-4 w-4" />
+                          Settings
+                        </DropdownItem>
+                      </div>
+                      <div className="py-1 border-t border-slate-100">
+                        <DropdownItem
+                          onClick={() => {
+                            navigate('/login');
+                            close();
+                          }}
+                          className="cursor-pointer"
+                        >
+                          Sign out
+                        </DropdownItem>
+                      </div>
+                    </>
+                  )}
+                </Dropdown>
+              </div>
+            ) : (
+              <Button
+                variant="outline"
+                size="sm"
+                className="ml-3 flex items-center gap-1"
+                onClick={() => navigate('/login')}
               >
-                {(close) => (
-                  <>
-                    <div className="py-1">
-                      <DropdownItem
-                        onClick={() => {
-                          navigate('/profile');
-                          close();
-                        }}
-                        className="flex items-center cursor-pointer"
-                      >
-                        <UserCircle className="mr-2 h-4 w-4" />
-                        Profile
-                      </DropdownItem>
-                      <DropdownItem
-                        onClick={() => {
-                          navigate('/settings');
-                          close();
-                        }}
-                        className="flex items-center cursor-pointer"
-                      >
-                        <Settings className="mr-2 h-4 w-4" />
-                        Settings
-                      </DropdownItem>
-                    </div>
-                    <div className="py-1 border-t border-slate-100">
-                      <DropdownItem
-                        onClick={() => {
-                          navigate('/login');
-                          close();
-                        }}
-                        className="cursor-pointer"
-                      >
-                        Sign out
-                      </DropdownItem>
-                    </div>
-                  </>
-                )}
-              </Dropdown>
-            </div>
+                <LogIn className="h-4 w-4" />
+                Sign In
+              </Button>
+            )}
             {/* Added Login Button */}
-            <Button
-              variant="outline"
-              size="sm"
-              className="ml-3 flex items-center gap-1"
-              onClick={() => navigate('/login')}
-            >
-              <LogIn className="h-4 w-4" />
-              Sign In
-            </Button>
+
           </div>
           <div className="-mr-2 flex items-center sm:hidden">
             <button

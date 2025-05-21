@@ -136,7 +136,7 @@ export const questions: Question[] = [
     title: 'What is the significance of the Golden Ratio in nature?',
     body: "I've noticed that the Golden Ratio (approximately 1.618) appears frequently in nature - from flower petals to spiral galaxies. Is there a scientific explanation for why this particular ratio is so prevalent? Does it serve some evolutionary or physical purpose?",
     tags: ['mathematics', 'biology', 'patterns'],
-    createdAt: '2023-08-10T14:15:00Z',
+    createdAt: '2024-08-10T14:15:00Z',
     updatedAt: '2023-08-10T14:15:00Z',
     authorId: '1',
     author: users.find(u => u.id === '1')!,
