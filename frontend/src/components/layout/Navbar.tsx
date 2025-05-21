@@ -1,14 +1,61 @@
-import React, { useState } from 'react';
-import { Search, Menu, X, MessageCircle, Bell, User, Settings, UserCircle, LogIn } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Search, Menu, X, MessageCircle, Bell, User, Settings, UserCircle, LogIn, LogOut } from 'lucide-react';
 import { Link } from '../ui/Link';
 import { Dropdown, DropdownItem } from '../ui/Dropdown';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../ui/Button';
+import { toast } from 'sonner';
 
 const Navbar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
   const [loggedIn, setLoggedIn] = useState(localStorage.getItem("isAuthenticatedToFactRush") === "true");
+
+  useEffect(() => {
+    const checkAuthStatus = () => {
+      const isAuthenticated = localStorage.getItem('isAuthenticatedToFactRush') === 'true';
+      setLoggedIn(isAuthenticated);
+    };
+
+    checkAuthStatus();
+
+    window.addEventListener('storage', checkAuthStatus);
+
+    const intervalId = setInterval(checkAuthStatus, 1000);
+
+    return () => {
+      window.removeEventListener('storage', checkAuthStatus);
+      clearInterval(intervalId);
+    };
+  }, []);
+
+
+
+  const handleLogout = async () => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/auth/logout`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to log out');
+      }
+
+      localStorage.removeItem('isAuthenticatedToFactRush');
+      localStorage.removeItem('accessToken');
+      setLoggedIn(false);
+      toast.success(data.message || 'Logged out successfully');
+      navigate('/login');
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to log out');
+    }
+  };
 
   return (
     <nav className="bg-white border-b border-slate-200 sticky top-0 z-50">
@@ -81,11 +128,12 @@ const Navbar: React.FC = () => {
                       <div className="py-1 border-t border-slate-100">
                         <DropdownItem
                           onClick={() => {
-                            navigate('/login');
+                            handleLogout();
                             close();
                           }}
-                          className="cursor-pointer"
+                          className="flex items-center cursor-pointer"
                         >
+                          <LogOut className="mr-2 h-4 w-4" />
                           Sign out
                         </DropdownItem>
                       </div>
@@ -104,8 +152,6 @@ const Navbar: React.FC = () => {
                 Sign In
               </Button>
             )}
-            {/* Added Login Button */}
-
           </div>
           <div className="-mr-2 flex items-center sm:hidden">
             <button
@@ -123,7 +169,6 @@ const Navbar: React.FC = () => {
         </div>
       </div>
 
-      {/* Mobile menu */}
       <div className={`${isOpen ? 'block' : 'hidden'} sm:hidden`}>
         <div className="pt-2 pb-3 space-y-1">
           <Link to="/" className="bg-indigo-50 border-indigo-500 text-indigo-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium">
@@ -155,9 +200,13 @@ const Navbar: React.FC = () => {
             <Link to="/settings" className="block px-4 py-2 text-base font-medium text-slate-500 hover:text-slate-800 hover:bg-slate-100">
               Settings
             </Link>
-            <Link to="/login" className="block px-4 py-2 text-base font-medium text-slate-500 hover:text-slate-800 hover:bg-slate-100">
+            <button
+              onClick={handleLogout}
+              className="flex items-center w-full px-4 py-2 text-base font-medium text-slate-500 hover:text-slate-800 hover:bg-slate-100 text-left"
+            >
+              <LogOut className="mr-2 h-4 w-4" />
               Sign out
-            </Link>
+            </button>
           </div>
         </div>
       </div>

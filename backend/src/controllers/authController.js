@@ -135,13 +135,35 @@ export const login = async (req, res) => {
             isAuthenticated: true,
         });
     } catch (err) {
-        console.log(err);
+        console.log("login error",err);
         return res.status(500).json({
             message: "Internal server error. Please try again."
         })
     }
 };
 
+export const logout = (req, res) => {
+    try {
+        res.clearCookie("accessToken", {
+            httpOnly: true,
+            secure: true,
+            sameSite: 'None',
+            path: '/',
+        });
+
+        res.clearCookie("isAuthenticated", {
+            httpOnly: false,
+            secure: true,
+            sameSite: 'None',
+            path: '/',
+        });
+
+        res.status(200).json({ message: "Sign out successful" });
+    } catch (err) {
+        console.error('Logout error:', err);
+        res.status(500).json({ message: "Internal server error during logout" });
+    }
+};
 
 export const getUser = async (req, res) => {
     try {
@@ -214,6 +236,35 @@ export const changePassword = async (req, res) => {
 
         return res.status(200).json({
             message: "Password changed successfully.",
+        })
+
+    } catch (err) {
+        console.log(err);
+        return res.status(500).json({
+            message: "Internal server error. Please try again."
+        })
+    }
+}
+
+export const resetForgotPassword = async (req, res) => {
+    try {
+        const { email, newPassword } = req.body;
+
+        const existingUser = await User.findOne({ email });
+
+        if (!existingUser) {
+            return res.status(404).json({
+                message: "User not found."
+            })
+        }
+
+        const salt = await bcrypt.genSalt(Number(process.env.SALT));
+        const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+        await User.findByIdAndUpdate(existingUser._id, { password: hashedPassword });
+
+        return res.status(200).json({
+            message: "Password reset successfully.",
         })
 
     } catch (err) {

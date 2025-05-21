@@ -1,9 +1,6 @@
 import jwt from 'jsonwebtoken';
 export function authenticateToken(req, res, next) {
     const token = req.cookies.accessToken;
-    console.log(req.cookies);
-    console.log(req.headers.cookies);
-    console.log(req.headers);
 
     if (!token) {
         return res.status(401).json({ message: 'Authentication token is missing' });

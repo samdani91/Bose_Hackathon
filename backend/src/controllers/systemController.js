@@ -76,7 +76,7 @@ export const sendOtp = async (req, res) => {
 
     const content = {
       to: email,
-      from: 'bsse1412@iit.du.ac.bd',
+      from: 'campusreconnectdu@gmail.com',
       subject: 'Verification Code',
       text: `Your verification code is: ${otp}`,
       html: `<p>Your verification code is: <strong>${otp}</strong></p>`
@@ -98,13 +98,13 @@ export const verifyOtp = async (req, res) => {
   const { email, otp } = req.body;
 
   if (!email || !otp) {
-    return res.status(400).json({ message: 'Email and otp are required' });
+    return res.status(400).json({ message: 'Email and Code are required' });
   }
 
   const storedOtp = verificationCodes.get(email);
 
   if (!storedOtp || storedOtp.code !== otp) {
-    return res.status(400).json({ message: 'Invalid or expired verification otp' });
+    return res.status(400).json({ message: 'Invalid or expired verification code' });
   }
 
   verificationCodes.delete(email);
