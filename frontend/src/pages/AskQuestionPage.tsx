@@ -11,6 +11,7 @@ export const AskQuestionPage: React.FC = () => {
   const [images, setImages] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [isUploading, setIsUploading] = useState(false);
+  const [allowAIEvaluation, setAllowAIEvaluation] = useState(true); // New state for AI evaluation
   const fileInputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
 
@@ -123,7 +124,6 @@ export const AskQuestionPage: React.FC = () => {
           throw new Error('Failed to upload image to Cloudinary');
         }
         uploadedUrls.push(data.secure_url);
-        console.log(uploadedUrls)
       } catch (error) {
         throw new Error('Error uploading image to Cloudinary');
       }
@@ -174,7 +174,7 @@ export const AskQuestionPage: React.FC = () => {
         imageUrls = await uploadImagesToCloudinary(images);
       }
 
-      // Submit question with image URLs
+      // Submit question with image URLs and AI evaluation preference
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/question/create`, {
         method: 'POST',
         headers: {
@@ -184,6 +184,7 @@ export const AskQuestionPage: React.FC = () => {
           title,
           description: body,
           images: imageUrls,
+          allowAIEvaluation, // Include AI evaluation preference
         }),
         credentials: 'include',
       });
@@ -223,7 +224,7 @@ export const AskQuestionPage: React.FC = () => {
         </Link>
       </div>
 
-      <div className="bg-white shadow rounded-lg overflow-hidden">
+      <div className="bg-white rounded-xl shadow-lg border border-slate-200/80 hover:border-slate-300 transition-colors">
         <div className="px-6 py-5 bg-slate-50 border-b border-slate-200">
           <h1 className="text-2xl font-bold text-slate-800">Ask a Question</h1>
           <p className="mt-1 text-sm text-slate-600">
@@ -358,6 +359,36 @@ export const AskQuestionPage: React.FC = () => {
             </div>
           </div>
 
+          {/* AI Evaluation Section */}
+          <div className="space-y-2 pt-4 border-t border-slate-200">
+            <label className="block text-sm font-medium text-slate-700">
+              AI Evaluation
+            </label>
+            <p className="text-xs text-slate-500 mb-3">
+              Allow our AI to analyze and provide insights on your question (recommended)
+            </p>
+            <div className="flex items-center space-x-4">
+              <label className="inline-flex items-center">
+                <input
+                  type="radio"
+                  className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-slate-300"
+                  checked={allowAIEvaluation}
+                  onChange={() => setAllowAIEvaluation(true)}
+                />
+                <span className="ml-2 text-sm text-slate-700">Allow AI evaluation</span>
+              </label>
+              <label className="inline-flex items-center">
+                <input
+                  type="radio"
+                  className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-slate-300"
+                  checked={!allowAIEvaluation}
+                  onChange={() => setAllowAIEvaluation(false)}
+                />
+                <span className="ml-2 text-sm text-slate-700">Don't allow</span>
+              </label>
+            </div>
+          </div>
+
           {/* Submit Button */}
           <div className="flex justify-end pt-4">
             <Button
@@ -366,7 +397,14 @@ export const AskQuestionPage: React.FC = () => {
               className="min-w-[200px]"
               disabled={isUploading}
             >
-              {isUploading ? 'Posting...' : 'Post Your Question'}
+              {isUploading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Posting...
+                </>
+              ) : (
+                'Post Your Question'
+              )}
             </Button>
           </div>
         </form>
