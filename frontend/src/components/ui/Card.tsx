@@ -21,6 +21,14 @@ export const CardHeader: React.FC<CardProps> = ({ className = '', children }) =>
   );
 };
 
+export const CardTitle: React.FC<CardProps> = ({ className = '', children }) => {
+  return (
+    <h3 className={`text-lg font-semibold text-slate-800 ${className}`}>
+      {children}
+    </h3>
+  );
+};
+
 export const CardContent: React.FC<CardProps> = ({ className = '', children }) => {
   return (
     <div className={`px-4 py-5 sm:p-6 ${className}`}>

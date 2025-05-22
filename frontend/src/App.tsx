@@ -14,6 +14,7 @@ import { LeaderboardPage } from './quiz/pages/LeaderboardPage';
 import AllQuestionListPage from './pages/question/AllQuestionListPage';
 import AllUserListPage from './pages/user/AllUserListPage';
 import TagPage from './pages/TagPage';
+import BadgesPage from './pages/BadgesPage';
 
 function App() {
   return (
@@ -36,6 +37,8 @@ function App() {
         <Route path="/allQuestions" element={<MainLayout> <AllQuestionListPage/> </MainLayout>} />
         <Route path="/allUsers" element={<MainLayout> <AllUserListPage/></MainLayout>} />
         <Route path="/tags" element={<MainLayout> <TagPage/></MainLayout>} />
+        <Route path="/badges" element={<MainLayout> <BadgesPage/></MainLayout>} />
+
 
         <Route element={<ProtectedRoute />} >
           <Route path="/quizzes" element={<MainLayout><QuizPage /></MainLayout>} />
