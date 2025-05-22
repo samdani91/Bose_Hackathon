@@ -1,71 +1,93 @@
-import { ArrowUp, ArrowDown, Check, MessageSquare } from 'lucide-react';
+import { ArrowUp, ArrowDown, Check } from 'lucide-react';
 import type { Answer } from '../../types';
 import { Link } from '../ui/Link';
 import { Card, CardContent } from '../ui/Card';
+import { useState } from 'react';
+
+
+interface UserData {
+  name: string;
+  email: string;
+  occupation: string;
+  bio: string;
+  image?: string;
+}
+
 
 interface AnswerListProps {
   answers: Answer[];
+  user: UserData | null;
 }
 
-export const AnswerList = ({ answers }: AnswerListProps) => {
-  // Sort answers: accepted first, then by votes
-  const sortedAnswers = [...answers].sort((a, b) => {
-    if (a.isAccepted && !b.isAccepted) return -1;
-    if (!a.isAccepted && b.isAccepted) return 1;
-    return b.votes - a.votes;
-  });
+export const AnswerList = ({ answers, user }: AnswerListProps) => {
+  const [voteStatus, setVoteStatus] = useState<'up' | 'down' | null>(null);
+
+  function handleVote(arg0: string): void {
+    throw new Error('Function not implemented.');
+  }
 
   return (
     <div className="space-y-6">
-      {sortedAnswers.map(answer => (
-        <Card key={answer.id} className={answer.isAccepted ? 'border-2 border-emerald-300' : ''}>
+      {answers.map(answer => (
+        <Card key={answer.id} className='border-2 border-emerald-300'>
           <CardContent className="p-0">
             <div className="flex">
               {/* Voting */}
               <div className="p-6 flex flex-col items-center w-16 md:w-20">
-                <button className="text-slate-400 hover:text-indigo-500 focus:outline-none transition-colors">
-                  <ArrowUp className="h-8 w-8" />
+                <button
+                  className={`rounded-full transition-all ${voteStatus === 'up' ? 'bg-emerald-100 text-emerald-600 shadow-inner' : 'text-slate-400 hover:bg-slate-100 hover:text-emerald-500'}`}
+                  onClick={() => handleVote('up')}
+                  aria-label="Upvote"
+                >
+                  <ArrowUp className="h-6 w-6" />
                 </button>
-                <span className="text-xl font-medium text-slate-700 my-2">{answer.votes}</span>
-                <button className="text-slate-400 hover:text-slate-500 focus:outline-none transition-colors">
-                  <ArrowDown className="h-8 w-8" />
+                <div className="flex flex-row items-center mx-3 md:flex-col md:my-3 md:mx-0">
+                  {/* <span className="text-xs text-slate-500">Upvotes</span> */}
+                  <span className={`text-lg font-semibold ${voteStatus === 'up' ? 'text-emerald-600' : 'text-slate-700'}`}>
+                    {answer.upvoteCount || 0}
+                  </span>
+                  <span className="my-2 md:my-2 md:mx-0 mx-2 w-0.5 h-6 md:w-6 md:h-0.5 bg-slate-200 rounded-full"></span>
+                  {/* <span className="text-xs text-slate-500 mt-2">Downvotes</span> */}
+                  <span className={`text-lg font-semibold ${voteStatus === 'down' ? 'text-rose-600' : 'text-slate-700'}`}>
+                    {answer.downvoteCount || 0}
+                  </span>
+                </div>
+                <button
+                  className={`rounded-full  transition-all ${voteStatus === 'down' ? 'bg-rose-100 text-rose-600 shadow-inner' : 'text-slate-400 hover:bg-slate-100 hover:text-rose-500'}`}
+                  onClick={() => handleVote('down')}
+                  aria-label="Downvote"
+                >
+                  <ArrowDown className="h-6 w-6" />
                 </button>
-                {answer.isAccepted && (
-                  <div className="mt-4 bg-emerald-100 p-1 rounded-full">
-                    <Check className="h-6 w-6 text-emerald-600" />
-                  </div>
-                )}
+                <div className="mt-4 bg-emerald-100 p-1 rounded-full">
+                  <Check className="h-6 w-6 text-emerald-600" />
+                </div>
               </div>
 
               {/* Answer content */}
               <div className="flex-1 p-6 border-l border-slate-100">
                 <div className="prose max-w-none text-slate-700">
-                  <p>{answer.body}</p>
+                  <p>{answer.text}</p>
                 </div>
 
-                <div className="mt-6 flex justify-between items-center">
-                  <div className="flex space-x-2 text-sm">
-                    <button className="text-slate-500 hover:text-indigo-600">Edit</button>
-                    <button className="text-slate-500 hover:text-indigo-600">Share</button>
-                    <button className="text-slate-500 hover:text-indigo-600">Follow</button>
-                  </div>
+                <div className="mt-6 flex justify-end items-center">
                   <div className="flex items-center bg-slate-50 p-3 rounded-lg">
                     <div className="flex-shrink-0">
-                      {answer.author.avatarUrl ? (
-                        <img 
-                          className="h-10 w-10 rounded-full" 
-                          src={answer.author.avatarUrl} 
-                          alt={answer.author.displayName} 
+                      {user?.image ? (
+                        <img
+                          className="h-10 w-10 rounded-full"
+                          src={user?.image}
+                          alt={user?.name}
                         />
                       ) : (
                         <div className="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-800 font-medium">
-                          {answer.author.displayName.charAt(0)}
+                          {user?.name.charAt(0)}
                         </div>
                       )}
                     </div>
                     <div className="ml-3">
-                      <Link to={`/user/${answer.author.id}`} className="text-sm font-medium text-slate-700 hover:text-indigo-600">
-                        {answer.author.displayName}
+                      <Link to={`/profile/${answer.userId}`} className="text-slate-700 hover:text-indigo-600">
+                        {user?.name}
                       </Link>
                       <p className="text-xs text-slate-500">
                         Answered {new Date(answer.createdAt).toLocaleDateString()}
@@ -75,14 +97,14 @@ export const AnswerList = ({ answers }: AnswerListProps) => {
                 </div>
 
                 {/* Comments */}
-                <div className="mt-4 pt-4 border-t border-slate-200">
+                {/* <div className="mt-4 pt-4 border-t border-slate-200">
                   <div className="flex justify-between items-center mb-2">
                     <h3 className="text-sm font-medium text-slate-700">
                       Comments ({answer.comments.length})
                     </h3>
                     <button className="text-xs text-indigo-600 hover:text-indigo-800">Add a comment</button>
                   </div>
-                  
+
                   {answer.comments.length > 0 && (
                     <div className="space-y-2">
                       {answer.comments.map(comment => (
@@ -107,7 +129,7 @@ export const AnswerList = ({ answers }: AnswerListProps) => {
                       ))}
                     </div>
                   )}
-                </div>
+                </div> */}
               </div>
             </div>
           </CardContent>

@@ -8,7 +8,7 @@ const answerSchema = new mongoose.Schema({
     {
       title: { type: String, required: true },
       url: { type: String, required: true }
-    }
+    },
   ],
   upVoteCount: { type: Number, default: 0, min: 0 },
   downVoteCount: { type: Number, default: 0, min: 0 }

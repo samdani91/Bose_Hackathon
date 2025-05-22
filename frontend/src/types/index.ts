@@ -28,16 +28,14 @@ export interface Question {
 }
 
 export interface Answer {
-  id: string;
-  body: string;
-  createdAt: string;
-  updatedAt: string;
-  authorId: string;
-  author: User;
+  userId: string;
+  upvoteCount: number;
+  text: string;
+  references: string[];
   questionId: string;
-  votes: number;
-  isAccepted: boolean;
-  comments: Comment[];
+  createdAt: string;
+  downvoteCount: number;
+  id: string;
 }
 
 export interface Comment {
