@@ -167,21 +167,13 @@ export const logout = (req, res) => {
 
 export const getUser = async (req, res) => {
     try {
-        const token = req.headers.authorization?.split(" ")[1];
-        if (!token) {
-            return res.status(401).json({
-                message: "Unauthorized"
-            })
+        const userId = req.user_id;
+
+        if (!userId) {
+            return res.status(401).json({ message: "You are not authorized to change the password!" });
         }
 
-        const user = jwt.verify(token, process.env.JWT_SECRET);
-        if (!user) {
-            return res.status(401).json({
-                message: "Unauthorized"
-            })
-        }
-
-        const existingUser = await User.findOne({ _id: user.userId });
+        const existingUser = await User.findById(userId);
 
         if (!existingUser) {
             return res.status(404).json({
@@ -196,6 +188,8 @@ export const getUser = async (req, res) => {
                 id: existingUser._id,
                 createdAt: existingUser.createdAt,
                 image: existingUser.image,
+                bio:existingUser.bio,
+                occupation:existingUser.occupation,
             },
         })
 
@@ -206,6 +200,83 @@ export const getUser = async (req, res) => {
         })
     }
 }
+
+export const updateUser = async (req, res) => {
+    try {
+        const userId = req.user_id;
+
+        if (!userId) {
+            return res.status(401).json({ message: "You are not authorized to update this profile!" });
+        }
+
+        const { name, email, occupation, bio, profileImage } = req.body;
+
+        if (!name || !name.trim()) {
+            return res.status(400).json({
+                message: "Name is required."
+            });
+        }
+
+        if (!email || !email.trim()) {
+            return res.status(400).json({
+                message: "Email is required."
+            });
+        }
+
+        const emailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
+        if (!emailRegex.test(email)) {
+            return res.status(400).json({
+                message: "Email must be a valid Gmail address."
+            });
+        }
+
+        // Check if email is already in use by another user
+        const existingUserWithEmail = await User.findOne({ email, _id: { $ne: userId } });
+        if (existingUserWithEmail) {
+            return res.status(400).json({
+                message: "This email is associated with another account."
+            });
+        }
+
+        const updateData = {
+            name: name.trim(),
+            email: email.trim(),
+            occupation: occupation ? occupation.trim() : '',
+            bio: bio ? bio.trim() : '',
+            image: profileImage || ''
+        };
+
+        const updatedUser = await User.findByIdAndUpdate(
+            userId,
+            { $set: updateData },
+            { new: true, runValidators: true }
+        );
+
+        if (!updatedUser) {
+            return res.status(404).json({
+                message: "User not found."
+            });
+        }
+
+        return res.status(200).json({
+            message: "Profile updated successfully.",
+            user: {
+                email: updatedUser.email,
+                name: updatedUser.name,
+                id: updatedUser._id,
+                createdAt: updatedUser.createdAt,
+                image: updatedUser.image,
+                bio: updatedUser.bio,
+                occupation: updatedUser.occupation,
+            },
+        });
+    } catch (err) {
+        console.error('Update user error:', err);
+        return res.status(500).json({
+            message: "Internal server error. Please try again."
+        });
+    }
+};
 
 export const changePassword = async (req, res) => {
     try {
