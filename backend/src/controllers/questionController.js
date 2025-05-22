@@ -37,7 +37,7 @@ export const createQuestion = async (req, res) => {
         const newTag = new Tag({ name: tagName });
         await newTag.save();
       }else{
-        await new Tag.findOneAndUpdate(
+        await Tag.findOneAndUpdate(
           { name: tagName },
           { $inc: { count: 1 } },
           { new: true }
@@ -207,7 +207,7 @@ export const getQuestionsByTags = async (req, res) => {
       return res.status(400).json({ message: "Tags array cannot be empty." });
     }
 
-    const questions = await Question.find({ tags: { $in: [tags] } }).sort({ createdAt: -1 });
+    const questions = await Question.find({ tags: { $in: tags } }).sort({ createdAt: -1 });
 
     if (questions.length === 0) {
       return res.status(404).json({ message: "No questions found for the given tags." });

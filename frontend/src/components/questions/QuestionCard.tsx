@@ -79,22 +79,22 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({ question }) => {
     // }));
   };
 
-  const handleUpvote = async () => {
-    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/vote/upv`, {
-      method: 'POST',
-      body: JSON.stringify({ 
-        userId: user.id
-      }),
-      credentials: 'include',
-    });
-    if (!response.ok) {
-      toast.error('Failed to upvote question');
-      return;
-    }
-    const data = await response.json();
-    // Update the question state with the new upvote count
-    question.upvotes = data.upvotes;
-  };
+  // const handleUpvote = async () => {
+  //   const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/vote/upv`, {
+  //     method: 'POST',
+  //     body: JSON.stringify({ 
+  //       userId: user.id
+  //     }),
+  //     credentials: 'include',
+  //   });
+  //   if (!response.ok) {
+  //     toast.error('Failed to upvote question');
+  //     return;
+  //   }
+  //   const data = await response.json();
+  //   // Update the question state with the new upvote count
+  //   question.upvotes = data.upvotes;
+  // };
 
   useEffect(() => {
     fetchUser();
@@ -106,7 +106,7 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({ question }) => {
           {/* Voting and stats column - ~16.67% (1/6) */}
           <div className="col-span-1 px-2 py-2 text-center flex flex-col items-center justify-start gap-2 border-r border-slate-100">
             <div className="flex flex-col items-center">
-              <button className="text-slate-400 hover:text-indigo-500 focus:outline-none transition-colors" onClick={handleUpvote}>
+              <button className="text-slate-400 hover:text-indigo-500 focus:outline-none transition-colors">
                 <ArrowUp className="h-6 w-6 text-emerald-600" />
               </button>
               <div className="flex items-center mx-3 flex-col md:my-3 md:mx-0">
@@ -120,7 +120,7 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({ question }) => {
                     {question.downvotes}
                   </span>
                 </div>
-              <button className="text-slate-400 hover:text-slate-500 focus:outline-none transition-colors" onClick={handleDownvote}>
+              <button className="text-slate-400 hover:text-slate-500 focus:outline-none transition-colors" >
                 <ArrowDown className="h-6 w-6 text-red-600" />
               </button>
             </div>
