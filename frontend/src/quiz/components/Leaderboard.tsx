@@ -1,74 +1,139 @@
-import type { LeaderboardEntry } from '../types/quiz';
-import { Link } from 'react-router-dom';
-import { ArrowLeft, Atom, FlaskConical, Rocket, Trophy } from 'lucide-react'; // Added Trophy import
+import { useEffect, useState } from 'react';
 
-interface LeaderboardProps {
-  entries: LeaderboardEntry[];
+interface User {
+  _id: string;
+  name: string;
+  email: string;
+  image: string;
+  streak: number;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
-export const Leaderboard = ({ entries }: LeaderboardProps) => {
-  // Sort entries by highestStreak in descending order
-  const sortedEntries = [...entries].sort((a, b) => b.highestStreak - a.highestStreak);
+interface ApiResponse {
+  users: User[];
+  message: string;
+}
 
-  // Science-themed badge components
+export const Leaderboard = () => {
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchLeaderboard = async () => {
+      try {
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/auth/streak`,
+          {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+          }
+        );
+        if (!response.ok) {
+          throw new Error('Failed to fetch leaderboard data');
+        }
+        const data: ApiResponse = await response.json();
+        console.log('Fetched leaderboard data:', data);
+        // Sort users by streak in descending order
+        const sortedUsers = [...data.users].sort((a, b) => b.streak - a.streak);
+        setUsers(sortedUsers);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'An unknown error occurred');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchLeaderboard();
+  }, []);
+
   const Badge = ({ position }: { position: number }) => {
-    const badgeConfig = {
+    if (position > 3) return null;
+
+    const badgeConfig: Record<1 | 2 | 3, { color: string; icon: string; label: string }> = {
       1: {
         color: 'bg-yellow-400 text-yellow-900',
-        icon: <Rocket className="w-4 h-4" />,
+        icon: '🥇',
         label: 'Gold'
       },
       2: {
         color: 'bg-gray-300 text-gray-700',
-        icon: <FlaskConical className="w-4 h-4" />,
+        icon: '🥈',
         label: 'Silver'
       },
       3: {
         color: 'bg-amber-600 text-amber-100',
-        icon: <Atom className="w-4 h-4" />,
+        icon: '🥉',
         label: 'Bronze'
       }
     };
 
-    if (position > 3) return null;
-
     return (
-      <span className={`ml-2 px-2 py-1 rounded-full text-xs font-semibold flex items-center gap-1 ${badgeConfig[position].color}`}>
-        {/* {badgeConfig[position].icon}
-        {badgeConfig[position].label} */}
+      <span className={`ml-2 px-2 py-1 rounded-full text-xs font-semibold flex items-center gap-1 ${badgeConfig[position as 1 | 2 | 3].color}`}>
+        {badgeConfig[position as 1 | 2 | 3].icon}
+        {badgeConfig[position as 1 | 2 | 3].label}
       </span>
     );
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading leaderboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="bg-white p-6 rounded-lg shadow-md max-w-md mx-auto">
+          <h2 className="text-xl font-bold text-red-600 mb-2">Error</h2>
+          <p className="text-gray-700 mb-4">{error}</p>
+          <button 
+            onClick={() => window.location.reload()}
+            className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition-colors"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4">
       <div className="max-w-3xl mx-auto">
         <div className="flex items-center justify-between mb-6">
-          <Link 
-            to="/quizzes" 
+          <button 
+            onClick={() => window.history.back()}
             className="flex items-center gap-2 px-4 py-2 bg-indigo-100 text-indigo-800 rounded-lg hover:bg-indigo-200 transition-colors"
           >
-            <ArrowLeft size={18} />
-            Back to Quiz
-          </Link>
-          {/* <h1 className="text-2xl font-bold text-indigo-800">Science Leaderboard</h1> */}
-          {/* <div className="w-24"></div>  */}
+            ← Back
+          </button>
+          {/* <h1 className="text-2xl font-bold text-indigo-800">Leaderboard</h1> */}
+          <div className="w-24"></div> {/* Spacer for alignment */}
         </div>
 
         <div className="bg-white rounded-xl shadow-md overflow-hidden">
           <div className="bg-gradient-to-r from-indigo-600 to-purple-600 p-4">
             <h2 className="text-white text-xl font-bold flex items-center gap-2">
-              <Trophy className="w-5 h-5" />
-              Leaderboard
+              🏆 Leaderboard
             </h2>
             <p className="text-indigo-100 text-sm mt-1">
-              Top science enthusiasts by consecutive correct answers
+              Top performers by streak
             </p>
           </div>
           
           <ul className="divide-y divide-gray-200">
-            {sortedEntries.map((entry, index) => (
-              <li key={entry.userId} className={`p-4 hover:bg-gray-50 transition-colors ${index < 3 ? 'bg-opacity-10' : ''} ${
+            {users.map((user, index) => (
+              <li key={user._id} className={`p-4 hover:bg-gray-50 transition-colors ${index < 3 ? 'bg-opacity-10' : ''} ${
                 index === 0 ? 'bg-yellow-50' : 
                 index === 1 ? 'bg-gray-50' : 
                 index === 2 ? 'bg-amber-50' : ''
@@ -82,28 +147,28 @@ export const Leaderboard = ({ entries }: LeaderboardProps) => {
                     {index + 1}
                   </span>
                   
-                  {entry.avatar ? (
+                  {user.image ? (
                     <img 
-                      src={entry.avatar} 
-                      alt={entry.username} 
-                      className="w-10 h-10 rounded-full mr-3 border-2 border-indigo-100"
+                      src={user.image} 
+                      alt={user.name} 
+                      className="w-10 h-10 rounded-full mr-3 border-2 border-indigo-100 object-cover"
                     />
                   ) : (
                     <div className="w-10 h-10 rounded-full mr-3 bg-indigo-100 flex items-center justify-center text-indigo-800 font-medium">
-                      {entry.username.charAt(0).toUpperCase()}
+                      {user.name.charAt(0).toUpperCase()}
                     </div>
                   )}
                   
                   <div className="flex-1">
-                    <span className="font-medium text-gray-800">{entry.username}</span>
+                    <span className="font-medium text-gray-800">{user.name}</span>
                     <div className="text-xs text-gray-500">
-                      {entry.highestStreak} correct answers in a row
+                      {user.email}
                     </div>
                   </div>
                   
                   <div className="flex items-center">
                     <span className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm font-medium">
-                      {entry.highestStreak}
+                      {user.streak}
                     </span>
                     <Badge position={index + 1} />
                   </div>
@@ -112,7 +177,7 @@ export const Leaderboard = ({ entries }: LeaderboardProps) => {
             ))}
           </ul>
           
-          {sortedEntries.length === 0 && (
+          {users.length === 0 && (
             <div className="p-8 text-center text-gray-500">
               No entries yet. Be the first to top the leaderboard!
             </div>
@@ -122,3 +187,5 @@ export const Leaderboard = ({ entries }: LeaderboardProps) => {
     </div>
   );
 };
+
+export default Leaderboard;
