@@ -64,99 +64,87 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({ question, setVoteCha
       joinedAt: data.user.createdAt,
     };
     setUser(newUser);
-    // const newQuestions = (Array.isArray(data.questions) ? data.questions : []).map(q => ({
-    //   id: q._id,
-    //   title: q.title,
-    //   body: q.description,
-    //   tags: q.tags || [],
-    //   createdAt: q.createdAt,
-    //   updatedAt: q.updatedAt,
-    //   authorId: q.user_id,
-    //   author: { id: q.user_id, email: 'Unknown' }, // Backend doesn't provide email
-    //   votes: (q.upvotes || 0) - (q.downvotes || 0),
-    //   answers: [], // Backend doesn't provide answers
-    //   views: q.viewsCount || 0,
-    //   isResolved: false, // Backend doesn't provide isResolved
-    // }));
   };
+
+
   const handleUpvote = async () => {
-  try {
-    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/vote/up`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include',
-      body: JSON.stringify({ 
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/vote/up`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          question_id: question._id,
+          answer_id: null,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to upvote question');
+      }
+
+      const data = await response.json();
+      question.upvotes = data.upvotes;
+      toast.success('Upvoted successfully!');
+      setVoteChange(true)
+    } catch (error) {
+      console.error('Upvote error:', error);
+      if (error instanceof Error) {
+        toast.error(error.message || 'Failed to upvote question');
+      } else {
+        toast.error('Failed to upvote question');
+      }
+    }
+  };
+
+
+  const handleDownvote = async () => {
+    try {
+      // console.log('Sending downvote for question:', question._id);
+
+      const payload = {
         question_id: question._id,
         answer_id: null,
-      }),
-    });
+      };
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || 'Failed to upvote question');
+      console.log('Request payload:', payload);
+
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/vote/down`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify(payload),
+      });
+
+      console.log('Response status:', response.status);
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Error response:', errorData);
+        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log('Success response:', data);
+
+      question.downvotes = data.downvotes;
+      toast.success('Downvoted successfully!');
+      setVoteChange(true)
+    } catch (error) {
+      console.error('Full error:', error);
+
+      if (error instanceof Error) {
+        toast.error(error.message || 'Failed to downvote question');
+      } else {
+        toast.error('An unexpected error occurred');
+      }
     }
-
-    const data = await response.json();
-    question.upvotes = data.upvotes;
-    toast.success('Upvoted successfully!');
-    setVoteChange(true)
-  } catch (error) {
-    console.error('Upvote error:', error);
-    if (error instanceof Error) {
-      toast.error(error.message || 'Failed to upvote question');
-    } else {
-      toast.error('Failed to upvote question');
-    }
-  }
-};
-
-
-const handleDownvote = async () => {
-  try {
-    // console.log('Sending downvote for question:', question._id);
-    
-    const payload = { 
-      question_id: question._id,
-      answer_id: null,
-    };
-    
-    console.log('Request payload:', payload);
-
-    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/vote/down`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include',
-      body: JSON.stringify(payload),
-    });
-
-    console.log('Response status:', response.status);
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      console.error('Error response:', errorData);
-      throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
-    }
-
-    const data = await response.json();
-    console.log('Success response:', data);
-    
-    question.downvotes = data.downvotes;
-    toast.success('Downvoted successfully!');
-    setVoteChange(true)
-  } catch (error) {
-    console.error('Full error:', error);
-    
-    if (error instanceof Error) {
-      toast.error(error.message || 'Failed to downvote question');
-    } else {
-      toast.error('An unexpected error occurred');
-    }
-  }
-};
+  };
 
   useEffect(() => {
     fetchUser();
@@ -172,16 +160,16 @@ const handleDownvote = async () => {
                 <ArrowUp className="h-6 w-6 text-emerald-600" />
               </button>
               <div className="flex items-center mx-3 flex-col md:my-3 md:mx-0">
-                  {/* <span className="text-xs text-slate-500">Upvotes</span> */}
-                  <span className={`text-lg font-semibold `}>
-                    {question.upvotes}
-                  </span>
-                  <span className="my-2 md:my-2 md:mx-0 mx-2 w-6 h-0.5 bg-slate-200 rounded-full"></span>
-                  {/* <span className="text-xs text-slate-500 mt-2">Downvotes</span> */}
-                  <span className={`text-lg font-semibold `}>
-                    {question.downvotes}
-                  </span>
-                </div>
+                {/* <span className="text-xs text-slate-500">Upvotes</span> */}
+                <span className={`text-lg font-semibold `}>
+                  {question.upvotes}
+                </span>
+                <span className="my-2 md:my-2 md:mx-0 mx-2 w-6 h-0.5 bg-slate-200 rounded-full"></span>
+                {/* <span className="text-xs text-slate-500 mt-2">Downvotes</span> */}
+                <span className={`text-lg font-semibold `}>
+                  {question.downvotes}
+                </span>
+              </div>
               <button className="text-slate-400 hover:text-slate-500 focus:outline-none transition-colors" onClick={handleDownvote}>
                 <ArrowDown className="h-6 w-6 text-red-600" />
               </button>

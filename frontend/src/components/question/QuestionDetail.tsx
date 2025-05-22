@@ -3,13 +3,14 @@ import { ArrowUp, ArrowDown, MessageSquare, Check, Bookmark, Share2, Flag, Thumb
 import type { Question, Answer } from '../../types';
 import { Badge } from '../ui/Badge';
 import { Link } from '../ui/Link';
-import { Button } from '../ui/Button';
 import { Card, CardContent } from '../ui/Card';
 import { AnswerList } from './AnswerList';
 import { AnswerForm } from './AnswerForm';
 import { toast } from 'sonner';
+
 interface QuestionDetailProps {
   question: Question;
+  setVoteChange: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 interface UserData {
@@ -24,12 +25,22 @@ interface UserResponse {
   user: UserData;
 }
 
-export const QuestionDetail = ({ question }: QuestionDetailProps) => {
+interface BanglaQuestion {
+  title: string;
+  body: string;
+}
+
+export const QuestionDetail = ({ question, setVoteChange }: QuestionDetailProps) => {
   const [currentQuestion, setCurrentQuestion] = useState<Question>(question);
-  const [voteStatus, setVoteStatus] = useState<'up' | 'down' | null>(null);
   const [userData, setUserData] = useState<UserData | null>(null);
   const [answers, setAnswers] = useState<Answer[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isUpvoted, setIsUpvoted] = useState(false);
+  const [questionInBangla, setQuestionInBangla] = useState<BanglaQuestion>({
+    title: '',
+    body: '',
+  });
+  const [isTranslated, setIsTranslated] = useState(false);
 
   const fetchUser = async () => {
     try {
@@ -82,37 +93,133 @@ export const QuestionDetail = ({ question }: QuestionDetailProps) => {
     }
   };
 
+  const handleTranslate = async () => {
+    try {
+      // Validate input
+      if (!currentQuestion.title || !currentQuestion.description) {
+        throw new Error('Title and description are required.');
+      }
+
+      console.log('Sending translation request:', {
+        question: { title: currentQuestion.title, body: currentQuestion.description },
+      });
+
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/system/translate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          question: { title: currentQuestion.title, body: currentQuestion.description },
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(
+          `HTTP error! status: ${response.status}, message: ${errorData.message || 'Unknown'}`
+        );
+      }
+
+      const data = await response.json();
+      console.log('Translation response:', data);
+
+      if (!data.translation?.question) {
+        throw new Error('Invalid translation response: missing question data.');
+      }
+
+      setQuestionInBangla(data.translation.question);
+    } catch (error) {
+      console.error('Translation error:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to translate question. Please try again.');
+    }
+  };
+
+  useEffect(() => {
+    if (isTranslated) {
+      handleTranslate();
+    } else {
+      setQuestionInBangla({ title: '', body: '' });
+    }
+  }, [isTranslated]);
+
   useEffect(() => {
     fetchUser();
-    if(!isLoading) fetchAnswers();
-  }, [isLoading]);
+    if (!isLoading || isUpvoted) {
+      fetchAnswers();
+      setIsUpvoted(false);
+    }
+  }, [isLoading, isUpvoted]);
 
-  const handleVote = (type: 'up' | 'down') => {
-    // if (voteStatus === type) {
-    //   setCurrentQuestion({
-    //     ...currentQuestion,
-    //     votes: type === 'up' ? currentQuestion.votes - 1 : currentQuestion.votes + 1
-    //   });
-    //   setVoteStatus(null);
-    //   return;
-    // }
+  const handleUpvote = async () => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/vote/up`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          question_id: question._id,
+          answer_id: null,
+        }),
+      });
 
-    // let newVotes = currentQuestion.votes;
-    // if (voteStatus === null) {
-    //   newVotes = type === 'up' ? newVotes + 1 : newVotes - 1;
-    // } else {
-    //   newVotes = type === 'up' ? newVotes + 2 : newVotes - 2;
-    // }
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to upvote question');
+      }
+      setVoteChange(true);
+    } catch (error) {
+      console.error('Upvote error:', error);
+      if (error instanceof Error) {
+        toast.error(error.message || 'Failed to upvote question');
+      } else {
+        toast.error('Failed to upvote question');
+      }
+    }
+  };
 
-    // setCurrentQuestion({
-    //   ...currentQuestion,
-    //   votes: newVotes
-    // });
-    // setVoteStatus(type);
+
+  const handleDownvote = async () => {
+    try {
+      const payload = {
+        question_id: question._id,
+        answer_id: null,
+      };
+
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/vote/down`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Error response:', errorData);
+        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+      }
+
+      setVoteChange(true);
+
+    } catch (error) {
+      console.error('Full error:', error);
+
+      if (error instanceof Error) {
+        toast.error(error.message || 'Failed to downvote question');
+      } else {
+        toast.error('An unexpected error occurred');
+      }
+    }
   };
 
   const handleAnswerSubmit = async (answerText: string) => {
-    try{
+    try {
       setIsLoading(true);
       await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/answer/create`, {
         method: 'POST',
@@ -123,14 +230,14 @@ export const QuestionDetail = ({ question }: QuestionDetailProps) => {
         credentials: 'include',
         body: JSON.stringify({ text: answerText, questionId: currentQuestion._id }),
       })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        toast.success('Answer submitted successfully!');
-        setIsLoading(false);
-      })
-    }catch (error) {
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          toast.success('Answer submitted successfully!');
+          setIsLoading(false);
+        })
+    } catch (error) {
       console.error('Error submitting answer:', error);
       toast.error('Failed to submit answer. Please try again.');
       setIsLoading(false);
@@ -152,15 +259,11 @@ export const QuestionDetail = ({ question }: QuestionDetailProps) => {
     throw new Error('Function not implemented.');
   }
 
-  function handleTranslation(): void {
-    throw new Error('Function not implemented.');
-  }
-
   return (
     <div className="max-w-4xl mx-auto space-y-6 bg-slate-50/50 p-6">
       {/* Question header */}
       <div className="bg-white rounded-xl shadow-md p-6 border border-slate-200/80 hover:border-slate-300 transition-colors">
-        <h1 className="text-2xl font-bold text-slate-800 mb-3">{currentQuestion.title}</h1>
+        <h1 className="text-2xl font-bold text-slate-800 mb-3">{(isTranslated ? questionInBangla.title: currentQuestion.title)}</h1>
         <div className="flex flex-wrap gap-2 items-center text-sm text-slate-500">
           <span className="flex items-center gap-1">
             <span className="w-2 h-2 bg-emerald-500 rounded-full"></span>
@@ -183,29 +286,29 @@ export const QuestionDetail = ({ question }: QuestionDetailProps) => {
               {/* Voting */}
               <div className="md:p-6 p-4 flex md:flex-col flex-row justify-center items-center md:w-24 bg-slate-50/80 md:border-r border-b md:border-b-0 border-slate-200/50">
                 <button
-                  className={`rounded-full transition-all ${voteStatus === 'up' ? 'bg-emerald-100 text-emerald-600 shadow-inner' : 'text-slate-400 hover:bg-slate-100 hover:text-emerald-500'}`}
-                  onClick={() => handleVote('up')}
+                  className={`rounded-full transition-all 'text-slate-400 hover:bg-slate-100 hover:text-emerald-500'`}
+                  onClick={() => handleUpvote()}
                   aria-label="Upvote"
                 >
-                  <ArrowUp className="h-6 w-6" />
+                  <ArrowUp className="h-6 w-6 text-emerald-600" />
                 </button>
                 <div className="flex flex-row items-center mx-3 md:flex-col md:my-3 md:mx-0">
                   {/* <span className="text-xs text-slate-500">Upvotes</span> */}
-                  <span className={`text-lg font-semibold ${voteStatus === 'up' ? 'text-emerald-600' : 'text-slate-700'}`}>
+                  <span className={`text-lg font-semibold 'text-slate-700'`}>
                     {currentQuestion.upvotes}
                   </span>
                   <span className="my-2 md:my-2 md:mx-0 mx-2 w-0.5 h-6 md:w-6 md:h-0.5 bg-slate-200 rounded-full"></span>
                   {/* <span className="text-xs text-slate-500 mt-2">Downvotes</span> */}
-                  <span className={`text-lg font-semibold ${voteStatus === 'down' ? 'text-rose-600' : 'text-slate-700'}`}>
+                  <span className={`text-lg font-semibold 'text-slate-700'`}>
                     {currentQuestion.downvotes}
                   </span>
                 </div>
                 <button
-                  className={`rounded-full  transition-all ${voteStatus === 'down' ? 'bg-rose-100 text-rose-600 shadow-inner' : 'text-slate-400 hover:bg-slate-100 hover:text-rose-500'}`}
-                  onClick={() => handleVote('down')}
+                  className={`rounded-full  transition-all 'text-slate-400 hover:bg-slate-100 hover:text-rose-500'`}
+                  onClick={() => handleDownvote()}
                   aria-label="Downvote"
                 >
-                  <ArrowDown className="h-6 w-6" />
+                  <ArrowDown className="h-6 w-6 text-red-600" />
                 </button>
 
                 <div className="hidden md:flex md:flex-col items-center mt-6 space-y-3">
@@ -222,7 +325,7 @@ export const QuestionDetail = ({ question }: QuestionDetailProps) => {
                   <button
                     className="rounded-full p-2 text-slate-400 hover:bg-slate-100 hover:text-emerald-500 transition-all"
                     aria-label="Translate question"
-                    onClick={() => handleTranslation()} // You'll need to implement this function
+                    onClick={() => {setIsTranslated((prev) => !prev)}} // You'll need to implement this function
                   >
                     <Languages className="h-5 w-5" />
                   </button>
@@ -232,7 +335,7 @@ export const QuestionDetail = ({ question }: QuestionDetailProps) => {
               {/* Question content */}
               <div className="flex-1 p-6 bg-white">
                 <div className="prose max-w-none text-slate-700 whitespace-pre-wrap">
-                  <p className="text-lg">{currentQuestion.description}</p>
+                  <p className="text-lg">{(isTranslated ? questionInBangla.body : currentQuestion.description)}</p>
                 </div>
                 {currentQuestion.images.length > 0 && (
                   <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
@@ -258,7 +361,7 @@ export const QuestionDetail = ({ question }: QuestionDetailProps) => {
                       {tag}
                     </Badge>
                   ))}
-                </div>          
+                </div>
 
                 <div className="col-span-1 flex flex-col items-end text-sm">
                   <div className="flex items-center">
@@ -300,7 +403,7 @@ export const QuestionDetail = ({ question }: QuestionDetailProps) => {
         </div>
 
         {/* Answers */}
-        <AnswerList answers={answers} user={userData}/>
+        <AnswerList answers={answers} setIsUpvoted={setIsUpvoted} />
 
         {/* Answer form */}
         <div className="bg-white shadow-lg rounded-xl p-6 border border-slate-200/80 hover:border-slate-300 transition-colors">
