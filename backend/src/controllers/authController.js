@@ -7,37 +7,37 @@ export const signUp = async (req, res) => {
     try {
         const { name, email, password, confirmPassword } = req.body;
 
-        if(!name){
+        if (!name) {
             return res.status(400).json({
                 message: "Name is required."
             })
         }
 
-        if(!email){
+        if (!email) {
             return res.status(400).json({
                 message: "Email is required."
             })
         };
 
-        if(!password){
+        if (!password) {
             return res.status(400).json({
                 message: "Password is required."
             })
         };
 
-        if(!confirmPassword){
+        if (!confirmPassword) {
             return res.status(400).json({
                 message: "Confirm password is required."
             })
         };
 
-        if(password !== confirmPassword){
+        if (password !== confirmPassword) {
             return res.status(400).json({
                 message: "Passwords do not match."
             })
         };
 
-        if(password.length < 6){
+        if (password.length < 6) {
             return res.status(400).json({
                 message: "Password must be at least 6 characters."
             })
@@ -46,7 +46,7 @@ export const signUp = async (req, res) => {
         const emailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
         if (!emailRegex.test(email)) {
             return res.status(400).json({
-            message: "Email must be a valid Gmail address."
+                message: "Email must be a valid Gmail address."
             });
         };
 
@@ -91,7 +91,7 @@ export const login = async (req, res) => {
     try {
         const { email, password } = req.body;
 
-        if(!email){
+        if (!email) {
             return res.status(400).json({
                 message: "Email is required."
             })
@@ -135,7 +135,7 @@ export const login = async (req, res) => {
             isAuthenticated: true,
         });
     } catch (err) {
-        console.log("login error",err);
+        console.log("login error", err);
         return res.status(500).json({
             message: "Internal server error. Please try again."
         })
@@ -185,10 +185,10 @@ export const getUser = async (req, res) => {
                 id: existingUser._id,
                 createdAt: existingUser.createdAt,
                 image: existingUser.image,
-                bio:existingUser.bio,
-                occupation:existingUser.occupation,
-                institution:existingUser.institution,
-                classs:existingUser.classs,
+                bio: existingUser.bio,
+                occupation: existingUser.occupation,
+                institution: existingUser.institution,
+                classs: existingUser.classs,
             },
         })
 
@@ -242,7 +242,7 @@ export const updateUser = async (req, res) => {
             email: email.trim(),
             occupation: occupation ? occupation.trim() : '',
             institution: institution ? institution.trim() : '',
-            classs:classs ? classs.trim() : '',
+            classs: classs ? classs.trim() : '',
             bio: bio ? bio.trim() : '',
             image: image || ''
         };
@@ -378,3 +378,81 @@ export const getAllUsers = async (req, res) => {
         res.status(500).json({ message: "Server error while fetching users." });
     }
 };
+
+export const updateStreak = async (req, res) => {
+    try {
+        const userId = req.user_id;
+
+        if (!userId) {
+            return res.status(401).json({ message: "You are not authorized to update this profile!" });
+        }
+
+        const { streak } = req.body;
+
+        if (streak === undefined || streak === null) {
+            return res.status(400).json({
+                message: "Streak is required."
+            });
+        }
+
+        const updatedUser = await User.findByIdAndUpdate(
+            userId,
+            { $set: { streak } },
+            { new: true, runValidators: true }
+        );
+
+        if (!updatedUser) {
+            return res.status(404).json({
+                message: "User not found."
+            });
+        }
+
+        return res.status(200).json({
+            message: "Streak updated successfully.",
+            user: {
+                email: updatedUser.email,
+                name: updatedUser.name,
+                id: updatedUser._id,
+                createdAt: updatedUser.createdAt,
+                image: updatedUser.image,
+                streak: updatedUser.streak
+            },
+        });
+    } catch (err) {
+        console.error('Update streak error:', err);
+        return res.status(500).json({
+            message: "Internal server error. Please try again."
+        });
+    }
+}
+
+export const getStreaks = async (req, res) => {
+    try {
+        const userId = req.user_id;
+
+        if (!userId) {
+            return res.status(401).json({ message: "You are not authorized to view this profile!" });
+        }
+
+        const topUsers = await User.find()
+            .sort({ streakCount: -1 })
+            .limit(20)
+
+        const user = await User.findById(userId);
+
+        if(topUsers[topUsers.length - 1].streakCount > user.streakCount){
+            topUsers.push(user);
+        }
+
+        return res.status(200).json({
+            users: topUsers,
+            message: "Streak retrieved successfully.",
+        })
+
+    } catch (err) {
+        console.log(err);
+        return res.status(500).json({
+            message: "Internal server error. Please try again."
+        })
+    }
+}
