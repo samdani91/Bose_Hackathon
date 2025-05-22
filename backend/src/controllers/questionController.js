@@ -2,6 +2,7 @@ import Question from "../models/Question.js";
 import { generateTagPrompt } from "../utils/prompts.js";
 import axios from "axios";
 import Tag from "../models/Tag.js";
+import mongoose from "mongoose";
 
 export const createQuestion = async (req, res) => {
   try {
@@ -146,40 +147,58 @@ export const deleteQuestion = async (req, res) => {
 };
 
 
-export const upVoteQuestion = async (questionId) => {
-  try {
-    const updatedQuestion = await Question.findByIdAndUpdate(
-      questionId,
-      { $inc: { upVoteCount: 1 } },
-      { new: true }
-    );
+export async function upVoteQuestion(questionId, reverse = false) {
+    try {
+        if (!mongoose.isValidObjectId(questionId)) {
+            throw new Error("Invalid question ID");
+        }
 
-    if (!updatedQuestion) {
-      return res.status(404).json({ error: 'Question not found' });
+        const update = reverse
+            ? { $inc: { upvotes: -1 } }
+            : { $inc: { upvotes: 1 } };
+
+        const question = await Question.findByIdAndUpdate(
+            questionId,
+            update,
+            { new: true, runValidators: true }
+        );
+
+        if (!question) {
+            throw new Error("Question not found");
+        }
+
+        return question;
+    } catch (error) {
+        console.error('Error in upVoteQuestion:', error);
+        throw error; 
     }
-
-    return updatedQuestion;
-  } catch (error) {
-    console.error('Error upvoting question:', error);
-  }
 }
 
-export const downVoteQuestion = async (questionId) => {
-  try {
-    const updatedQuestion = await Answer.findByIdAndUpdate(
-      questionId,
-      { $inc: { downVoteCount: 1 } },
-      { new: true }
-    );
+export async function downVoteQuestion(questionId, reverse = false) {
+    try {
+        if (!mongoose.isValidObjectId(questionId)) {
+            throw new Error("Invalid question ID");
+        }
 
-    if (!updatedQuestion) {
-      return res.status(404).json({ error: 'Question not found' });
+        const update = reverse
+            ? { $inc: { downvotes: -1 } }
+            : { $inc: { downvotes: 1 } }; 
+
+        const question = await Question.findByIdAndUpdate(
+            questionId,
+            update,
+            { new: true, runValidators: true }
+        );
+
+        if (!question) {
+            throw new Error("Question not found");
+        }
+
+        return question;
+    } catch (error) {
+        console.error('Error in downVoteQuestion:', error);
+        throw error;
     }
-
-    return updatedQuestion;
-  } catch (error) {
-    console.error('Error downvoting qustion:', error);
-  }
 }
 
 

@@ -1,17 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { QuestionCard } from './QuestionCard';
-import { Button } from '../ui/Button';
 import type { Question } from '../../types';
-import { ArrowUpDown, Filter, Search } from 'lucide-react';
+import { Search } from 'lucide-react';
 
 interface QuestionListProps {
   questions: Question[];
+  setVoteChange: React.Dispatch<React.SetStateAction<boolean>>;
+
 }
 
-export const QuestionList: React.FC<QuestionListProps> = ({ questions: initialQuestions }) => {
+export const QuestionList: React.FC<QuestionListProps> = ({ questions: initialQuestions , setVoteChange}) => {
   const [questions, setQuestions] = useState<Question[]>(initialQuestions);
-  const [sortBy, setSortBy] = useState<'newest' | 'votes' | 'activity'>('newest');
-  const [showFilters, setShowFilters] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
@@ -27,21 +26,6 @@ export const QuestionList: React.FC<QuestionListProps> = ({ questions: initialQu
       setQuestions(initialQuestions);
     }
   }, [searchQuery, initialQuestions]);
-
-  const handleSort = (sortType: 'newest' | 'votes' | 'activity') => {
-    // setSortBy(sortType);
-    // const sortedQuestions = [...questions];
-
-    // if (sortType === 'newest') {
-    //   sortedQuestions.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-    // } else if (sortType === 'votes') {
-    //   sortedQuestions.sort((a, b) => b.votes - a.votes);
-    // } else if (sortType === 'activity') {
-    //   sortedQuestions.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
-    // }
-
-    // setQuestions(sortedQuestions);
-  };
 
   return (
     <div className="space-y-4">
@@ -62,60 +46,12 @@ export const QuestionList: React.FC<QuestionListProps> = ({ questions: initialQu
             </div>
           </form>
 
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center"
-            >
-              <Filter className="h-4 w-4 mr-1" />
-              Filters
-            </Button>
-            {/* <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center"
-            >
-              <ArrowUpDown className="h-4 w-4 mr-1" />
-              Sort
-            </Button> */}
-          </div>
         </div>
-
-        {showFilters && (
-          <div className="mt-4 pt-4 border-t border-slate-200">
-            <div className="flex flex-wrap gap-2">
-              <Button
-                variant={sortBy === 'newest' ? 'primary' : 'outline'}
-                size="sm"
-                onClick={() => handleSort('newest')}
-              >
-                Newest
-              </Button>
-              <Button
-                variant={sortBy === 'votes' ? 'primary' : 'outline'}
-                size="sm"
-                onClick={() => handleSort('votes')}
-              >
-                Most Votes
-              </Button>
-              <Button
-                variant={sortBy === 'activity' ? 'primary' : 'outline'}
-                size="sm"
-                onClick={() => handleSort('activity')}
-              >
-                Recent Activity
-              </Button>
-            </div>
-          </div>
-        )}
       </div>
 
       <div>
         {questions.length > 0 ? (
-          questions.map((question) => <QuestionCard key={question._id} question={question} />)
+          questions.map((question) => <QuestionCard key={question._id} question={question} setVoteChange={setVoteChange}/>)
         ) : (
           <div className="text-center py-10 bg-white rounded-lg shadow-sm">
             <h3 className="text-lg font-medium text-slate-900">No questions found</h3>

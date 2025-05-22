@@ -167,11 +167,6 @@ export const logout = (req, res) => {
 
 export const getUser = async (req, res) => {
     try {
-        const userId = req.user_id;
-
-        if (!userId) {
-            return res.status(401).json({ message: "You are not authorized to get user data" });
-        }
 
         const { id } = req.params;
 

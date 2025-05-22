@@ -34,7 +34,7 @@ app.get("/", (req, res) => {
 
 app.use("/api/auth", authRouter);
 app.use("/api/answer",authenticateToken, answerRouter);
-app.use("/api/question", authenticateToken, questionRouter);
+app.use("/api/question", questionRouter);
 app.use("/api/vote", authenticateToken, voteRouter);
 app.use("/api/system", systemRouter);
 
