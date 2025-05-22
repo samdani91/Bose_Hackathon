@@ -6,11 +6,27 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '../ui/Button';
 import { toast } from 'sonner';
 
+interface UserData {
+  _id: string;
+  name: string;
+  image?: string;
+}
+
+interface QuestionData {
+  _id: string;
+  title: string;
+  tags: string[];
+}
+
 const Navbar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
   const [loggedIn, setLoggedIn] = useState(localStorage.getItem("isAuthenticatedToFactRush") === "true");
-  const [userId, setUserId] = useState(null);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<{ title: string; id: string; type: string; image?: string }[]>([]);
+  const [users, setUsers] = useState<UserData[]>([]);
+  const [questions, setQuestions] = useState<QuestionData[]>([]);
 
   useEffect(() => {
     const checkAuthStatus = () => {
@@ -19,9 +35,7 @@ const Navbar: React.FC = () => {
     };
 
     checkAuthStatus();
-
     window.addEventListener('storage', checkAuthStatus);
-
     const intervalId = setInterval(checkAuthStatus, 1000);
 
     return () => {
@@ -29,7 +43,6 @@ const Navbar: React.FC = () => {
       clearInterval(intervalId);
     };
   }, []);
-
 
   useEffect(() => {
     const fetchUserId = async () => {
@@ -54,6 +67,89 @@ const Navbar: React.FC = () => {
 
     fetchUserId();
   }, []);
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/auth/allUsers`, {
+          method: 'GET',
+          credentials: 'include',
+        });
+        const data = await response.json();
+        if (response.ok) {
+          setUsers(data.users || []);
+        } else {
+          toast.error('Failed to fetch users');
+        }
+      } catch (err) {
+        toast.error('Something went wrong while fetching users');
+      }
+    };
+
+    fetchUsers();
+  }, []);
+
+  useEffect(() => {
+    const fetchQuestions = async () => {
+      try {
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/question/`, {
+          method: 'GET',
+          credentials: 'include',
+        });
+        const data = await response.json();
+        if (response.ok) {
+          setQuestions(data.questions || []);
+        } else {
+          toast.error('Failed to fetch questions');
+        }
+      } catch (err) {
+        toast.error('Something went wrong while fetching questions');
+      }
+    };
+
+    fetchQuestions();
+  }, []);
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const query = e.target.value;
+    setSearchQuery(query);
+
+    if (query.length >= 3) {
+      const results = [
+        ...users
+          .filter((user) => user.name.trim().toLowerCase().includes(query.toLowerCase()))
+          .map((user) => ({
+            title: user.name,
+            id: user._id,
+            type: 'User',
+            image: user.image,
+          })),
+        ...questions
+          .filter((question) =>
+            question.title.trim().toLowerCase().includes(query.toLowerCase()) ||
+            question.tags.some((tag) => tag.trim().toLowerCase().includes(query.toLowerCase()))
+          )
+          .map((question) => ({
+            title: question.title,
+            id: question._id,
+            type: 'Question',
+          })),
+      ];
+      setSearchResults(results);
+    } else {
+      setSearchResults([]);
+    }
+  };
+
+  const handleSearchResultClick = (id: string, type: string) => {
+    setSearchQuery('');
+    setSearchResults([]);
+    if (type === 'User') {
+      navigate(`/profile/${id}`);
+    } else if (type === 'Question') {
+      navigate(`/question/${id}`);
+    }
+  };
 
   const handleLogout = async () => {
     try {
@@ -81,7 +177,6 @@ const Navbar: React.FC = () => {
     }
   };
 
-
   return (
     <nav className="bg-white border-b border-slate-200 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -92,15 +187,12 @@ const Navbar: React.FC = () => {
               <span className="ml-2 text-xl font-bold text-slate-800">FactRush</span>
             </Link>
             <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
-              <Link to="/" className="border-indigo-500 text-slate-900 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+              <Link
+                to="/"
+                className="border-indigo-500 text-slate-900 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+              >
                 Home
               </Link>
-              {/* <Link to="/tags" className="border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
-                Tags
-              </Link>
-              <Link to="/users" className="border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
-                Users
-              </Link> */}
             </div>
           </div>
           <div className="hidden sm:ml-6 sm:flex items-center">
@@ -110,13 +202,46 @@ const Navbar: React.FC = () => {
               </div>
               <input
                 type="text"
+                value={searchQuery}
+                onChange={handleSearchChange}
                 className="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-10 pr-12 sm:text-sm border-slate-300 rounded-md h-9"
                 placeholder="Search..."
               />
+              {searchResults.length > 0 && (
+                <ul className="absolute left-0 mt-2 w-full bg-white text-black rounded-md shadow-lg z-10">
+                  {searchResults.map((result, index) => (
+                    <React.Fragment key={result.id}>
+                      <li
+                        className="px-4 py-2 hover:bg-slate-100 hover:rounded-md cursor-pointer flex items-center"
+                        onClick={() => handleSearchResultClick(result.id, result.type)}
+                      >
+                        {result.type === 'User' && result.image ? (
+                          <img
+                            src={result.image}
+                            alt={`${result.title} avatar`}
+                            className="h-8 w-8 rounded-full mr-2 object-cover"
+                          />
+                        ) : result.type === 'User' ? (
+                          <div className="h-8 w-8 rounded-full bg-slate-200 flex items-center justify-center mr-2">
+                            <User className="h-5 w-5 text-slate-500" />
+                          </div>
+                        ) : null}
+                        <div>
+                          <span className="block font-semibold">{result.title}</span>
+                          <span className="block text-sm text-slate-500">{result.type}</span>
+                        </div>
+                      </li>
+                      {index < searchResults.length - 1 && (
+                        <li className="border-t border-slate-200 mx-3"></li>
+                      )}
+                    </React.Fragment>
+                  ))}
+                </ul>
+              )}
             </div>
-            <button className="ml-3 p-1 rounded-full text-slate-400 hover:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            {/* <button className="ml-3 p-1 rounded-full text-slate-400 hover:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500">
               <Bell className="h-5 w-5" aria-hidden="true" />
-            </button>
+            </button> */}
             {loggedIn ? (
               <div className="ml-3 relative">
                 <Dropdown
@@ -196,15 +321,57 @@ const Navbar: React.FC = () => {
 
       <div className={`${isOpen ? 'block' : 'hidden'} sm:hidden`}>
         <div className="pt-2 pb-3 space-y-1">
-          <Link to="/" className="bg-indigo-50 border-indigo-500 text-indigo-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium">
+          <Link
+            to="/"
+            className="bg-indigo-50 border-indigo-500 text-indigo-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium"
+          >
             Home
           </Link>
-          {/* <Link to="/tags" className="border-transparent text-slate-500 hover:bg-slate-50 hover:border-slate-300 hover:text-slate-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium">
-            Tags
-          </Link>
-          <Link to="/users" className="border-transparent text-slate-500 hover:bg-slate-50 hover:border-slate-300 hover:text-slate-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium">
-            Users
-          </Link> */}
+          <div className="relative px-4 py-2">
+            <div className="relative rounded-md shadow-sm">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <Search className="h-4 w-4 text-slate-400" aria-hidden="true" />
+              </div>
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={handleSearchChange}
+                className="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-10 pr-12 sm:text-sm border-slate-300 rounded-md h-9"
+                placeholder="Search..."
+              />
+              {searchResults.length > 0 && (
+                <ul className="mt-2 w-full bg-white text-black rounded-md shadow-lg z-10">
+                  {searchResults.map((result, index) => (
+                    <React.Fragment key={result.id}>
+                      <li
+                        className="px-4 py-2 hover:bg-slate-100 hover:rounded-md cursor-pointer flex items-center"
+                        onClick={() => handleSearchResultClick(result.id, result.type)}
+                      >
+                        {result.type === 'User' && result.image ? (
+                          <img
+                            src={result.image}
+                            alt={`${result.title} avatar`}
+                            className="h-8 w-8 rounded-full mr-2 object-cover"
+                          />
+                        ) : result.type === 'User' ? (
+                          <div className="h-8 w-8 rounded-full bg-slate-200 flex items-center justify-center mr-2">
+                            <User className="h-5 w-5 text-slate-500" />
+                          </div>
+                        ) : null}
+                        <div>
+                          <span className="block font-semibold">{result.title}</span>
+                          <span className="block text-sm text-slate-500">{result.type}</span>
+                        </div>
+                      </li>
+                      {index < searchResults.length - 1 && (
+                        <li className="border-t border-slate-200 mx-3"></li>
+                      )}
+                    </React.Fragment>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
         </div>
         <div className="pt-4 pb-3 border-t border-slate-200">
           <div className="flex items-center px-4">
@@ -213,20 +380,18 @@ const Navbar: React.FC = () => {
                 <User className="h-6 w-6 text-slate-500" aria-hidden="true" />
               </div>
             </div>
-            {/* <div className="ml-3">
-              <div className="text-base font-medium text-slate-800">Guest User</div>
-              <div className="text-sm font-medium text-slate-500">guest@example.com</div>
-            </div> */}
           </div>
           <div className="mt-3 space-y-1">
-              <Link
-                to={`/profile/${userId}`}
-                className="block px-4 py-2 text-base font-medium text-slate-500 hover:text-slate-800 hover:bg-slate-100"
-              >
-                Your Profile
-              </Link>
-
-            <Link to="/settings" className="block px-4 py-2 text-base font-medium text-slate-500 hover:text-slate-800 hover:bg-slate-100">
+            <Link
+              to={`/profile/${userId}`}
+              className="block px-4 py-2 text-base font-medium text-slate-500 hover:text-slate-800 hover:bg-slate-100"
+            >
+              Your Profile
+            </Link>
+            <Link
+              to="/settings"
+              className="block px-4 py-2 text-base font-medium text-slate-500 hover:text-slate-800 hover:bg-slate-100"
+            >
               Settings
             </Link>
             <button

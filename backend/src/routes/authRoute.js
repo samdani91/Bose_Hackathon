@@ -1,5 +1,5 @@
 import express from "express";
-import { signUp, login, getUser, changePassword, resetForgotPassword, logout, updateUser, getUserId } from "../controllers/authController.js";
+import { signUp, login, getUser, changePassword, resetForgotPassword, logout, updateUser, getUserId, getAllUsers } from "../controllers/authController.js";
 import { authenticateToken } from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
@@ -11,5 +11,6 @@ router.post("/changePassword", authenticateToken ,changePassword);
 router.post("/resetForgotPassword", resetForgotPassword);
 router.post("/logout",authenticateToken,logout);
 router.get("/getUserId", authenticateToken, getUserId);
+router.get("/allUsers", getAllUsers); // New route to fetch all users
 
 export default router;
