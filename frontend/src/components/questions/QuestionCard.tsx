@@ -179,7 +179,7 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({ question, setVoteCha
               <span>{question.answers.length}</span>
             </div> */}
             <div className="text-slate-500 text-sm">
-              <span>{question.viewsCount} views</span>
+              <span>{Math.floor(question.viewsCount)} views</span>
             </div>
           </div>
 
