@@ -189,6 +189,7 @@ export const getUser = async (req, res) => {
                 occupation: existingUser.occupation,
                 institution: existingUser.institution,
                 classs: existingUser.classs,
+                reputation: existingUser.points,
             },
         })
 

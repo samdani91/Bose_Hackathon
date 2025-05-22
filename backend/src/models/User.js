@@ -10,6 +10,7 @@ const UserSchema = new mongoose.Schema({
     password: { type: String, required: true },
     image: { type: String, default: "" },
     streak: { type: Number, default: 0 },
+    points: { type: Number, default: 0 },
 }, {
     timestamps: true,
 });
