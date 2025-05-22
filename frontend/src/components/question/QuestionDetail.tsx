@@ -13,62 +13,63 @@ interface QuestionDetailProps {
 }
 
 export const QuestionDetail = ({ question }: QuestionDetailProps) => {
+  console.log('QuestionDetail question:', question);
   const [currentQuestion, setCurrentQuestion] = useState<Question>(question);
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [voteStatus, setVoteStatus] = useState<'up' | 'down' | null>(null);
 
   const handleVote = (type: 'up' | 'down') => {
-    if (voteStatus === type) {
-      setCurrentQuestion({
-        ...currentQuestion,
-        votes: type === 'up' ? currentQuestion.votes - 1 : currentQuestion.votes + 1
-      });
-      setVoteStatus(null);
-      return;
-    }
+    // if (voteStatus === type) {
+    //   setCurrentQuestion({
+    //     ...currentQuestion,
+    //     votes: type === 'up' ? currentQuestion.votes - 1 : currentQuestion.votes + 1
+    //   });
+    //   setVoteStatus(null);
+    //   return;
+    // }
     
-    let newVotes = currentQuestion.votes;
-    if (voteStatus === null) {
-      newVotes = type === 'up' ? newVotes + 1 : newVotes - 1;
-    } else {
-      newVotes = type === 'up' ? newVotes + 2 : newVotes - 2;
-    }
+    // let newVotes = currentQuestion.votes;
+    // if (voteStatus === null) {
+    //   newVotes = type === 'up' ? newVotes + 1 : newVotes - 1;
+    // } else {
+    //   newVotes = type === 'up' ? newVotes + 2 : newVotes - 2;
+    // }
       
-    setCurrentQuestion({
-      ...currentQuestion,
-      votes: newVotes
-    });
-    setVoteStatus(type);
+    // setCurrentQuestion({
+    //   ...currentQuestion,
+    //   votes: newVotes
+    // });
+    // setVoteStatus(type);
   };
 
   const handleAnswerSubmit = (answerText: string) => {
-    const newAnswer: Answer = {
-      id: `answer-${Date.now()}`,
-      body: answerText,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      authorId: '1',
-      author: {
-        id: '1',
-        username: 'current_user',
-        displayName: 'Current User',
-        email: 'current.user@example.com',
-        reputation: 123,
-        joinedAt: new Date().toISOString(),
-        badges: [],
-      },
-      questionId: question.id,
-      votes: 0,
-      isAccepted: false,
-      comments: [],
-    };
+    // const newAnswer: Answer = {
+    //   id: `answer-${Date.now()}`,
+    //   body: answerText,
+    //   createdAt: new Date().toISOString(),
+    //   updatedAt: new Date().toISOString(),
+    //   authorId: '1',
+    //   author: {
+    //     id: '1',
+    //     username: 'current_user',
+    //     displayName: 'Current User',
+    //     email: 'current.user@example.com',
+    //     reputation: 123,
+    //     joinedAt: new Date().toISOString(),
+    //     badges: [],
+    //   },
+    //   questionId: question.id,
+    //   votes: 0,
+    //   isAccepted: false,
+    //   comments: [],
+    // };
 
-    const updatedAnswers = [...currentQuestion.answers, newAnswer];
+    // const updatedAnswers = [...currentQuestion.answers, newAnswer];
     
-    setCurrentQuestion({
-      ...currentQuestion,
-      answers: updatedAnswers,
-    });
+    // setCurrentQuestion({
+    //   ...currentQuestion,
+    //   answers: updatedAnswers,
+    // });
   };
 
   interface FormatDateOptions {
@@ -95,7 +96,7 @@ export const QuestionDetail = ({ question }: QuestionDetailProps) => {
           <span>•</span>
           <span className="flex items-center gap-1">
             <span className="w-2 h-2 bg-indigo-500 rounded-full"></span>
-            Viewed {currentQuestion.views} times
+            Viewed {currentQuestion.viewsCount} times
           </span>
         </div>
       </div>
@@ -116,7 +117,7 @@ export const QuestionDetail = ({ question }: QuestionDetailProps) => {
                   <ArrowUp className="h-6 w-6" />
                 </button>
                 <span className={`text-xl font-medium mx-3 md:my-3 md:mx-0 ${voteStatus === 'up' ? 'text-emerald-600' : voteStatus === 'down' ? 'text-rose-600' : 'text-slate-700'}`}>
-                  {currentQuestion.votes}
+                  {currentQuestion.upvotes - currentQuestion.downvotes}
                 </span>
                 <button 
                   className={`rounded-full p-2 transition-all ${voteStatus === 'down' ? 'bg-rose-100 text-rose-600 shadow-inner' : 'text-slate-400 hover:bg-slate-100 hover:text-rose-500'}`}
@@ -146,14 +147,18 @@ export const QuestionDetail = ({ question }: QuestionDetailProps) => {
               {/* Question content */}
               <div className="flex-1 p-6 bg-white">
                 <div className="prose max-w-none text-slate-700">
-                  <p className="text-lg">{currentQuestion.body}</p>
+                  <p className="text-lg">{currentQuestion.description}</p>
                 </div>
 
                 <div className="mt-6 flex flex-wrap gap-2">
-                  {currentQuestion.tags.map((tag, index) => (
-                    <Badge key={index} variant="primary" className="cursor-pointer bg-indigo-100 text-indigo-700 hover:bg-indigo-200 transition-colors py-1 px-3 rounded-full">
-                      {tag}
-                    </Badge>
+                  {(currentQuestion.tags ?? []).map((tag, index) => (
+                    <Badge
+                        key={index}
+                        variant="primary"
+                        className="cursor-pointer hover:bg-indigo-200 transition-colors"
+                      >
+                        {tag}
+                      </Badge>
                   ))}
                 </div>
 
@@ -189,25 +194,28 @@ export const QuestionDetail = ({ question }: QuestionDetailProps) => {
                   
                   <div className="flex items-center bg-slate-50/80 p-3 rounded-lg border border-slate-200/50 hover:border-indigo-100 transition-colors">
                     <div className="flex-shrink-0">
-                      {currentQuestion.author.avatarUrl ? (
+                      {currentQuestion.user_id ? (
                         <img 
                           className="h-10 w-10 rounded-full" 
-                          src={currentQuestion.author.avatarUrl} 
-                          alt={currentQuestion.author.displayName} 
+                          src={currentQuestion.user_id} 
+                          // alt={currentQuestion.author.displayName} 
+                          alt={'User Avatar'}
                         />
                       ) : (
                         <div className="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-800 font-medium">
-                          {currentQuestion.author.displayName.charAt(0)}
+                          {/* {currentQuestion.author.displayName.charAt(0)} */}
+                          {'User Name'}
                         </div>
                       )}
                     </div>
                     <div className="ml-3">
-                      <Link to={`/user/${currentQuestion.author.id}`} className="text-sm font-medium text-slate-700 hover:text-indigo-600">
+                      {/* <Link to={`/user/${currentQuestion.author.id}`} className="text-sm font-medium text-slate-700 hover:text-indigo-600">
                         {currentQuestion.author.displayName}
-                      </Link>
+                      </Link> */}
                       <p className="text-xs text-slate-500 flex items-center gap-1">
                         <span className="inline-block w-2 h-2 bg-amber-400 rounded-full"></span>
-                        {currentQuestion.author.reputation.toLocaleString()} reputation
+                        {/* {currentQuestion.author.reputation.toLocaleString()} reputation */}
+                        Reputation
                       </p>
                     </div>
                   </div>
@@ -236,15 +244,15 @@ export const QuestionDetail = ({ question }: QuestionDetailProps) => {
         </Card>
 
         {/* Answer count */}
-        <div className="bg-white p-4 rounded-xl shadow-md border-l-4 border-indigo-500 hover:border-indigo-600 transition-colors">
+        {/* <div className="bg-white p-4 rounded-xl shadow-md border-l-4 border-indigo-500 hover:border-indigo-600 transition-colors">
           <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
             <MessageCircle className="h-5 w-5 text-indigo-500" />
             {currentQuestion.answers.length} {currentQuestion.answers.length === 1 ? 'Answer' : 'Answers'}
           </h2>
-        </div>
+        </div> */}
 
         {/* Answers */}
-        <AnswerList answers={currentQuestion.answers} />
+        {/* <AnswerList answers={currentQuestion.answers} /> */}
 
         {/* Answer form */}
         <div className="bg-white shadow-lg rounded-xl p-6 border border-slate-200/80 hover:border-slate-300 transition-colors">

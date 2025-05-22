@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { QuestionDetail } from './QuestionDetail';
 import type { Question } from '../../types';
 import { questions } from '@/data/mockData';
+// import { c } from 'node_modules/vite/dist/node/moduleRunnerTransport.d-DJ_mE5sf';
 
 const QuestionPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -15,30 +16,16 @@ const QuestionPage = () => {
       try {
         setLoading(true);
         
-        // For development: Use mock data
-        if (import.meta.env.DEV) {
-          // Simulate network delay
-          await new Promise(resolve => setTimeout(resolve, 500));
-          
-          const mockQuestion = questions.find(q => q.id === id);
-          if (mockQuestion) {
-            setQuestion(mockQuestion);
-          } else {
-            throw new Error('Question not found');
-          }
-        } else {
-          // For production: Call the real API
-          const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/question/${id}`);
-
-          if (!response.ok) {
-            throw new Error('Failed to fetch question');
-          }
-
-
-        const data = await response.json();
-          setQuestion(data);
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/question/${id}`, {
+          credentials: 'include',
+        });
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch question');
         }
-
+        const data = await response.json();
+        console.log('Response for q by id:', data);
+        setQuestion(data.question);
 
 
       } catch (err) {
