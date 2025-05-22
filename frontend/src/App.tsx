@@ -9,6 +9,8 @@ import Register from './pages/auth/Register';
 import ForgotPassword from './pages/auth/ForgotPassword';
 import { ProtectedRoute } from './components/ProtectedRoutes';
 import QuestionPage from './components/question/QuestionPage';
+import { QuizPage } from './quiz/pages/QuizPage'; 
+import { LeaderboardPage } from './quiz/pages/LeaderboardPage';
 
 function App() {
   return (
@@ -28,6 +30,9 @@ function App() {
         <Route path="/register" element={<MainLayout><Register /></MainLayout>} />
         <Route path="/forgot-password" element={<MainLayout><ForgotPassword /></MainLayout>} />
         <Route path="/question/:id" element={<MainLayout> <QuestionPage /> </MainLayout>} />
+
+        <Route path="/quizzes" element={<MainLayout><QuizPage /></MainLayout>} />
+        <Route path="/quizzes/leaderboard" element={<MainLayout><LeaderboardPage /></MainLayout>} />
       </Routes>
     </Router>
   );
