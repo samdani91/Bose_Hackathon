@@ -50,8 +50,7 @@ export interface Comment {
 }
 
 export interface Tag {
-  id: string;
+  _id: string; 
   name: string;
-  description: string;
-  count: number; // Number of questions with this tag
+  count: number;
 }

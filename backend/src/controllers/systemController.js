@@ -3,6 +3,7 @@ import sendEmail from "../config/sendGridConfig.js";
 import { nanoid } from 'nanoid';
 import axios from "axios";
 import { generateTranslatePrompt } from "../utils/prompts.js";
+import Tag from "../models/Tag.js";
 
 const verificationCodes = new Map();
 
@@ -163,5 +164,28 @@ export const translateToBangla = async (req, res) => {
   } catch (error) {
     console.error('Error translating to Bangla:', error);
     res.status(500).json({ error: 'Failed to translate text.' });
+  }
+};
+
+
+export const getTags = async (req, res) => {
+  try {
+    const tags = await Tag.find().select('name count').sort({ count: -1 });
+    if (!tags || tags.length === 0) {
+      return res.status(404).json({ message: "No tags found" });
+    }
+
+    const formattedTags = tags.map(tag => ({
+      id: tag._id,
+      name: tag.name,
+      count: tag.count
+    }));
+    res.status(200).json({
+      message: "Tags retrieved successfully",
+      tags: formattedTags,
+    });
+  } catch (error) {
+    console.error("Error retrieving tags:", error);
+    res.status(500).json({ message: "Failed to retrieve tags", error: error.message });
   }
 };
