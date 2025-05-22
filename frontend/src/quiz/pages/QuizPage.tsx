@@ -221,9 +221,9 @@ export const QuizPage = () => {
         <StreakCounter current={currentStreak} highest={highestStreak} />
         
         <div className="mb-6 text-center">
-          <span className="text-gray-600">
+          {/* <span className="text-gray-600">
             Question {currentQuestionNumber}
-          </span>
+          </span> */}
         </div>
         
         <QuizCard 

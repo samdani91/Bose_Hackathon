@@ -219,11 +219,11 @@ export const AnswerCard: React.FC<AnswerCardProps> = ({ answer, setIsUpvoted }) 
                             </button>
                             <div className="flex flex-row items-center mx-3 md:flex-col md:my-3 md:mx-0">
                                 <span className="text-lg font-semibold text-slate-700">
-                                    {answer.upvoteCount || 0}
+                                    {answer.upVoteCount || 0}
                                 </span>
                                 <span className="my-2 md:my-2 md:mx-0 mx-2 w-0.5 h-6 md:w-6 md:h-0.5 bg-slate-200 rounded-full"></span>
                                 <span className="text-lg font-semibold text-slate-700">
-                                    {answer.downvoteCount || 0}
+                                    {answer.downVoteCount || 0}
                                 </span>
                             </div>
                             <button
