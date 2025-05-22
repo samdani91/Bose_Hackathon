@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ArrowUp, ArrowDown, MessageSquare, Check, Bookmark, Share2, Flag, ThumbsUp, ThumbsDown, MessageCircle, User } from 'lucide-react';
 import type { Question, Answer } from '../../types';
 import { Badge } from '../ui/Badge';
@@ -7,9 +7,21 @@ import { Button } from '../ui/Button';
 import { Card, CardContent } from '../ui/Card';
 import { AnswerList } from './AnswerList';
 import { AnswerForm } from './AnswerForm';
-
+import { toast } from 'sonner';
 interface QuestionDetailProps {
   question: Question;
+}
+
+interface UserData {
+  name: string;
+  email: string;
+  occupation: string;
+  bio: string;
+  image?: string;
+}
+
+interface UserResponse {
+  user: UserData;
 }
 
 export const QuestionDetail = ({ question }: QuestionDetailProps) => {
@@ -17,6 +29,39 @@ export const QuestionDetail = ({ question }: QuestionDetailProps) => {
   const [currentQuestion, setCurrentQuestion] = useState<Question>(question);
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [voteStatus, setVoteStatus] = useState<'up' | 'down' | null>(null);
+  const [userData, setUserData] = useState<UserData | null>(null);
+
+  const fetchUser = async () => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/auth/user/${question.user_id}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data: UserResponse = await response.json();
+
+      if (!data.user.name || !data.user.email) {
+        throw new Error('Invalid user data received');
+      }
+
+      setUserData(data.user);
+    } catch (err) {
+      console.error('Fetch error:', err);
+      toast.error('Failed to fetch user data. Please try again.');
+    }
+  };
+
+  useEffect(() => {
+    fetchUser();
+  }, []);
 
   const handleVote = (type: 'up' | 'down') => {
     // if (voteStatus === type) {
@@ -197,21 +242,21 @@ export const QuestionDetail = ({ question }: QuestionDetailProps) => {
                       {currentQuestion.user_id ? (
                         <img 
                           className="h-10 w-10 rounded-full" 
-                          src={currentQuestion.user_id} 
+                          src={userData?.image} 
                           // alt={currentQuestion.author.displayName} 
                           alt={'User Avatar'}
                         />
                       ) : (
                         <div className="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-800 font-medium">
                           {/* {currentQuestion.author.displayName.charAt(0)} */}
-                          {'User Name'}
+                          {userData?.name}
                         </div>
                       )}
                     </div>
                     <div className="ml-3">
-                      {/* <Link to={`/user/${currentQuestion.author.id}`} className="text-sm font-medium text-slate-700 hover:text-indigo-600">
-                        {currentQuestion.author.displayName}
-                      </Link> */}
+                      <Link to={`/profile/${question.user_id}`} className="text-sm font-medium text-slate-700 hover:text-indigo-600">
+                        {userData?.name}
+                      </Link>
                       <p className="text-xs text-slate-500 flex items-center gap-1">
                         <span className="inline-block w-2 h-2 bg-amber-400 rounded-full"></span>
                         {/* {currentQuestion.author.reputation.toLocaleString()} reputation */}
