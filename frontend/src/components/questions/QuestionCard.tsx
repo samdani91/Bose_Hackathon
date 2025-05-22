@@ -96,7 +96,7 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({ question }) => {
               <button className="text-slate-400 hover:text-indigo-500 focus:outline-none transition-colors">
                 <ArrowUp className="h-6 w-6" />
               </button>
-              <span className="text-lg font-medium text-slate-700 my-1">{question.upVotes || 0}</span>
+              <span className="text-lg font-medium text-slate-700 my-1">{question.upvotes || 0}</span>
               <button className="text-slate-400 hover:text-slate-500 focus:outline-none transition-colors">
                 <ArrowDown className="h-6 w-6" />
               </button>
