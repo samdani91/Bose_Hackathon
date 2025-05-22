@@ -44,7 +44,6 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({ question }) => {
 
   const [user, setUser] = useState<User>();
 
-
   const fetchUser = async () => {
     const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/auth/user/${question.user_id}`, {
       method: 'GET',
@@ -78,23 +77,83 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({ question }) => {
     //   isResolved: false, // Backend doesn't provide isResolved
     // }));
   };
+  const handleUpvote = async () => {
+  try {
+    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/vote/up`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify({ 
+        question_id: question._id,
+        answer_id: null,
+      }),
+    });
 
-  // const handleUpvote = async () => {
-  //   const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/vote/upv`, {
-  //     method: 'POST',
-  //     body: JSON.stringify({ 
-  //       userId: user.id
-  //     }),
-  //     credentials: 'include',
-  //   });
-  //   if (!response.ok) {
-  //     toast.error('Failed to upvote question');
-  //     return;
-  //   }
-  //   const data = await response.json();
-  //   // Update the question state with the new upvote count
-  //   question.upvotes = data.upvotes;
-  // };
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to upvote question');
+    }
+
+    const data = await response.json();
+    question.upvotes = data.upvotes;
+    toast.success('Upvoted successfully!');
+  } catch (error) {
+    console.error('Upvote error:', error);
+    if (error instanceof Error) {
+      toast.error(error.message || 'Failed to upvote question');
+    } else {
+      toast.error('Failed to upvote question');
+    }
+  }
+};
+
+
+const handleDownvote = async () => {
+  try {
+    // console.log('Sending downvote for question:', question._id);
+    
+    const payload = { 
+      question_id: question._id,
+      answer_id: null,
+    };
+    
+    console.log('Request payload:', payload);
+
+    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/vote/down`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify(payload),
+    });
+
+    console.log('Response status:', response.status);
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      console.error('Error response:', errorData);
+      throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log('Success response:', data);
+    
+    question.downvotes = data.downvotes;
+    toast.success('Downvoted successfully!');
+    
+  } catch (error) {
+    console.error('Full error:', error);
+    
+    if (error instanceof Error) {
+      toast.error(error.message || 'Failed to downvote question');
+    } else {
+      toast.error('An unexpected error occurred');
+    }
+  }
+};
 
   useEffect(() => {
     fetchUser();
