@@ -204,7 +204,7 @@ const handleDownvote = async () => {
               >
                 {question.title}
               </Link>
-              <p className="mt-2 text-slate-600 line-clamp-3">{question.description}</p>
+              <p className="mt-2 text-slate-600 line-clamp-3 whitespace-pre-wrap">{question.description}</p>
             </div>
 
             <div className="mt-4 grid grid-cols-3 items-center">

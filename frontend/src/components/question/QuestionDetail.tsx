@@ -231,7 +231,7 @@ export const QuestionDetail = ({ question }: QuestionDetailProps) => {
 
               {/* Question content */}
               <div className="flex-1 p-6 bg-white">
-                <div className="prose max-w-none text-slate-700">
+                <div className="prose max-w-none text-slate-700 whitespace-pre-wrap">
                   <p className="text-lg">{currentQuestion.description}</p>
                 </div>
                 {currentQuestion.images.length > 0 && (

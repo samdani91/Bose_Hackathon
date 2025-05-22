@@ -66,7 +66,7 @@ export const AnswerList = ({ answers, user }: AnswerListProps) => {
 
               {/* Answer content */}
               <div className="flex-1 p-6 border-l border-slate-100">
-                <div className="prose max-w-none text-slate-700">
+                <div className="prose max-w-none text-slate-700 whitespace-pre-wrap">
                   <p>{answer.text}</p>
                 </div>
 
