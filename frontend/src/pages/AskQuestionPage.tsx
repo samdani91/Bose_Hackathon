@@ -190,17 +190,38 @@ export const AskQuestionPage: React.FC = () => {
       });
 
       const data = await response.json();
+      
+      // console.log('Response from server:', data);
 
       if (!response.ok) {
         throw new Error(data.message || 'Question submit failed');
       }
-
       toast.success('Question submitted successfully!');
+
+
+      if (allowAIEvaluation) {
+        const airesponse = fetch(`${import.meta.env.VITE_API_BASE_URL}/api/answer/generate`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            title: data.question.title,
+            text: data.question.description,
+            tags: data.question.tags,
+            questionId: data.question._id,
+
+          }),
+          credentials: 'include',
+        });
+      }
+
       setTitle('');
       setBody('');
       setImages([]);
       setImagePreviews([]);
-      navigate('/');
+
+      navigate('/question/' + data.question._id);
     } catch (error) {
       // Cleanup uploaded images if submission fails
       if (imageUrls.length > 0) {
@@ -255,7 +276,7 @@ export const AskQuestionPage: React.FC = () => {
               value={title}
               onChange={(e) => {
                 setTitle(e.target.value);
-                if (e.target.value.length >= 15 && e.target.value.length <= MAX_TITLE_LENGTH) {
+                if (e.target.value.length >= 5 && e.target.value.length <= MAX_TITLE_LENGTH) {
                   setErrors({ ...errors, title: '' });
                 }
               }}
@@ -287,7 +308,7 @@ export const AskQuestionPage: React.FC = () => {
               value={body}
               onChange={(e) => {
                 setBody(e.target.value);
-                if (e.target.value.length >= 30 && e.target.value.length <= MAX_BODY_LENGTH) {
+                if (e.target.value.length >= 10 && e.target.value.length <= MAX_BODY_LENGTH) {
                   setErrors({ ...errors, body: '' });
                 }
               }}
@@ -365,26 +386,17 @@ export const AskQuestionPage: React.FC = () => {
               AI Evaluation
             </label>
             <p className="text-xs text-slate-500 mb-3">
-              Allow our AI to analyze and provide insights on your question (recommended)
+              Do you allow our AI to analyze and provide insights on your question (recommended)
             </p>
             <div className="flex items-center space-x-4">
               <label className="inline-flex items-center">
                 <input
-                  type="radio"
+                  type="checkbox"
                   className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-slate-300"
                   checked={allowAIEvaluation}
-                  onChange={() => setAllowAIEvaluation(true)}
+                  onChange={() => setAllowAIEvaluation(!allowAIEvaluation)}
                 />
-                <span className="ml-2 text-sm text-slate-700">Allow AI evaluation</span>
-              </label>
-              <label className="inline-flex items-center">
-                <input
-                  type="radio"
-                  className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-slate-300"
-                  checked={!allowAIEvaluation}
-                  onChange={() => setAllowAIEvaluation(false)}
-                />
-                <span className="ml-2 text-sm text-slate-700">Don't allow</span>
+                <span className="ml-2 text-sm text-slate-700">Allow</span>
               </label>
             </div>
           </div>
