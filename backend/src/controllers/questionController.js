@@ -72,6 +72,8 @@ export const getQuestionById = async (req, res) => {
     if (!question) {
       return res.status(404).json({ message: "Question not found." });
     }
+    question.viewsCount  = question.viewsCount + 0.5;
+    await question.save();
     res.status(200).json({ message: "Question fetched successfully.", question });
   } catch (error) {
     console.error("Error fetching question:", error);

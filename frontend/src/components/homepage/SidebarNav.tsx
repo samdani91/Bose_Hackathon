@@ -15,7 +15,6 @@ export const SidebarNav: React.FC = () => {
     { icon: <Tag className="h-5 w-5" />, label: 'Tags', href: '/tags' },
     { icon: <Users className="h-5 w-5" />, label: 'Users', href: '/allUsers' },
     { icon: <Award className="h-5 w-5" />, label: 'Badges', href: '/badges' },
-    { icon: <BookOpen className="h-5 w-5" />, label: 'Help', href: '/help' },
   ];
 
   return (
