@@ -273,6 +273,15 @@ export const QuestionDetail = ({ question, setVoteChange }: QuestionDetailProps)
         throw new Error(errorData.message || 'Failed to upvote question');
       }
       setVoteChange(true);
+      await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/system/point`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify({ userId: currentQuestion.user_id, point: 10 }),
+        credentials: 'include',
+      })
     } catch (error) {
       console.error('Upvote error:', error);
       if (error instanceof Error) {
@@ -306,6 +315,15 @@ export const QuestionDetail = ({ question, setVoteChange }: QuestionDetailProps)
       }
 
       setVoteChange(true);
+      await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/system/point`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify({ userId: currentQuestion.user_id, point: -2 }),
+        credentials: 'include',
+      })
     } catch (error) {
       console.error('Full error:', error);
       if (error instanceof Error) {
@@ -335,6 +353,15 @@ export const QuestionDetail = ({ question, setVoteChange }: QuestionDetailProps)
           toast.success('Answer submitted successfully!');
           setIsLoading(false);
         })
+      await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/system/point`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify({ userId: currentQuestion.user_id, point: 1 }),
+        credentials: 'include',
+      })
     } catch (error) {
       console.error('Error submitting answer:', error);
       toast.error('Failed to submit answer. Please try again.');

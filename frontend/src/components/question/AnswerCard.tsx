@@ -171,6 +171,15 @@ export const AnswerCard: React.FC<AnswerCardProps> = ({ answer, setIsUpvoted }) 
             }
             toast.success('Upvoted successfully!');
             setIsUpvoted(true);
+            await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/system/point`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Accept': 'application/json',
+                },
+                body: JSON.stringify({ userId: answer.userId, point: 15 }),
+                credentials: 'include',
+              })
         } catch (error) {
             console.error('Upvote error:', error);
             toast.error(error instanceof Error ? error.message : 'Failed to upvote answer');
@@ -197,6 +206,15 @@ export const AnswerCard: React.FC<AnswerCardProps> = ({ answer, setIsUpvoted }) 
             }
             toast.success('Downvoted successfully!');
             setIsUpvoted(true);
+            await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/system/point`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Accept': 'application/json',
+                },
+                body: JSON.stringify({ userId: answer.userId, point: 5 }),
+                credentials: 'include',
+              })
         } catch (error) {
             console.error('Downvote error:', error);
             toast.error(error instanceof Error ? error.message : 'Failed to downvote answer');

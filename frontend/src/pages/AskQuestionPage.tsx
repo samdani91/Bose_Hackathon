@@ -197,7 +197,21 @@ export const AskQuestionPage: React.FC = () => {
         throw new Error(data.message || 'Question submit failed');
       }
       toast.success('Question submitted successfully!');
+      
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/system/point`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: data.question.user_id,
+          points: 3
+        }),
+        credentials: 'include',
+      });
 
+      const data2 = await res.json();
+      console.log('Response from server:', data2);
 
       if (allowAIEvaluation) {
         const airesponse = fetch(`${import.meta.env.VITE_API_BASE_URL}/api/answer/generate`, {
