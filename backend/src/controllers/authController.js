@@ -438,11 +438,11 @@ export const getStreaks = async (req, res) => {
             .sort({ streakCount: -1 })
             .limit(20)
 
-        const user = await User.findById(userId);
+        // const user = await User.findById(userId);
 
-        if(topUsers[topUsers.length - 1].streakCount > user.streakCount){
-            topUsers.push(user);
-        }
+        // if(topUsers[topUsers.length - 1].streakCount > user.streakCount){
+        //     topUsers.push(user);
+        // }
 
         return res.status(200).json({
             users: topUsers,
