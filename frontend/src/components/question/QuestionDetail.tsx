@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ArrowUp, ArrowDown, MessageSquare, Check, Bookmark, Share2, Flag, ThumbsUp, ThumbsDown, MessageCircle, User, Languages, Volume2, X, Trash2 } from 'lucide-react';
+import { ArrowUp, ArrowDown, MessageCircle, Languages, Volume2, Trash2, X } from 'lucide-react';
 import type { Question, Answer } from '../../types';
 import { Badge } from '../ui/Badge';
 import { Link } from '../ui/Link';
@@ -35,7 +35,6 @@ interface ImageModalProps {
   onClose: () => void;
 }
 
-// New DeleteConfirmationModal component
 interface DeleteConfirmationModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -101,7 +100,7 @@ const ImageModal = ({ src, onClose }: ImageModalProps) => {
 };
 
 export const QuestionDetail = ({ question, setVoteChange }: QuestionDetailProps) => {
-  const [currentQuestion, setCurrentQuestion] = useState<Question>(question);
+  const [currentQuestion, _] = useState<Question>(question);
   const [userData, setUserData] = useState<UserData | null>(null);
   const [answers, setAnswers] = useState<Answer[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -353,7 +352,53 @@ export const QuestionDetail = ({ question, setVoteChange }: QuestionDetailProps)
     const options: FormatDateOptions = { year: 'numeric', month: 'short', day: 'numeric' };
     return new Date(dateString).toLocaleDateString(undefined, options);
   };
+  const handleReadAloud = async () => {
+    try {
+      const question = {
+        title: currentQuestion.title,
+        body: currentQuestion.description
+      };
+      console.log('Sending TTS request:', { question });
 
+      if (!question.title || !question.body) {
+        throw new Error('Question must include both title and body.');
+      }
+
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/system/tts`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({ question, answer: null }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(
+          `HTTP error! status: ${response.status}, message: ${errorData.error || 'Unknown'}`
+        );
+      }
+
+      const data = await response.json();
+      console.log('TTS response:', data);
+
+      if (!data.audioUrl) {
+        throw new Error('No audio URL returned from the server.');
+      }
+
+      const audio = new Audio(data.audioUrl);
+      await audio.play();
+      console.log('Audio playing:', data.audioUrl);
+
+      audio.onended = () => console.log('Audio playback completed');
+      audio.onerror = () => console.error('Audio playback error');
+    } catch (error) {
+      console.error('Read Aloud error:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to read aloud. Please try again.');
+    }
+  };
   const handleImageClick = (imageSrc: string) => {
     setSelectedImage(imageSrc);
   };
@@ -362,21 +407,10 @@ export const QuestionDetail = ({ question, setVoteChange }: QuestionDetailProps)
     setSelectedImage(null);
   };
 
-  function handleReadAloud(): void {
-    if ('speechSynthesis' in window) {
-      const textToSpeak = isTranslated ? `${questionInBangla.title}. ${questionInBangla.body}` : `${currentQuestion.title}. ${currentQuestion.description}`;
-      const utterance = new SpeechSynthesisUtterance(textToSpeak);
-      utterance.lang = isTranslated ? 'bn-BD' : 'en-US';
-      window.speechSynthesis.speak(utterance);
-    } else {
-      toast.error('Text-to-speech not supported in this browser.');
-    }
-  }
-
   return (
     <div className="max-w-4xl mx-auto space-y-6 bg-slate-50/50 p-6">
       <div className="bg-white rounded-xl shadow-md p-6 border border-slate-200/80 hover:border-slate-300 transition-colors">
-        <h1 className="text-2xl font-bold text-slate-800 mb-3">{(isTranslated ? questionInBangla.title: currentQuestion.title)}</h1>
+        <h1 className="text-2xl font-bold text-slate-800 mb-3">{(isTranslated ? questionInBangla.title : currentQuestion.title)}</h1>
         <div className="flex flex-wrap gap-2 items-center text-sm text-slate-500">
           <span className="flex items-center gap-1">
             <span className="w-2 h-2 bg-emerald-500 rounded-full"></span>
@@ -430,7 +464,7 @@ export const QuestionDetail = ({ question, setVoteChange }: QuestionDetailProps)
                   <button
                     className="rounded-full p-2 text-slate-400 hover:bg-slate-100 hover:text-emerald-500 transition-all"
                     aria-label="Translate question"
-                    onClick={() => setIsTranslated((prev) => !prev)}
+                    onClick={() => { setIsTranslated((prev) => !prev) }} // You'll need to implement this function
                   >
                     <Languages className="h-5 w-5" />
                   </button>

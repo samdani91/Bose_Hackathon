@@ -4,6 +4,10 @@ import { nanoid } from 'nanoid';
 import axios from "axios";
 import { generateTranslatePrompt } from "../utils/prompts.js";
 import Tag from "../models/Tag.js";
+import { SpeechConfig, AudioConfig, SpeechSynthesizer, ResultReason } from 'microsoft-cognitiveservices-speech-sdk';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 const verificationCodes = new Map();
 
@@ -187,5 +191,71 @@ export const getTags = async (req, res) => {
   } catch (error) {
     console.error("Error retrieving tags:", error);
     res.status(500).json({ message: "Failed to retrieve tags", error: error.message });
+  }
+};
+
+export const synthesizeSpeech = async (req, res) => {
+  try {
+    const __filename = fileURLToPath(import.meta.url);
+    const __dirname = path.dirname(__filename);
+    const SPEECH_KEY = process.env.SPEECH_KEY || 'your_speech_key';
+    const SPEECH_REGION = process.env.SPEECH_REGION || 'westus';
+    const { question, answer } = req.body;
+    if (question && (!question.title || !question.body)) {
+      return res.status(400).json({ error: 'Question must include both title and body.' });
+    }
+
+    // Combine title and body for synthesis
+    const number = Math.floor(Math.random() * 1000);
+    const textToSpeak = question ? `Title: ${question.title} Description: ${question.body}` : `${answer.text}`;
+    const outputDir = path.join(__dirname, '../../public/audio');
+    const outputFile = path.join(outputDir, `file${number}.mp3`);
+
+
+    if (fs.existsSync(outputDir)) {
+      fs.readdirSync(outputDir).forEach(file => {
+        const filePath = path.join(outputDir, file);
+        fs.unlinkSync(filePath);
+      });
+    }
+
+    if (!fs.existsSync(outputDir)) {
+      fs.mkdirSync(outputDir, { recursive: true });
+    }
+
+    // Configure Azure Speech SDK
+    const speechConfig = SpeechConfig.fromSubscription(SPEECH_KEY, SPEECH_REGION);
+    speechConfig.speechSynthesisVoiceName = 'en-US-JennyNeural';
+    speechConfig.speechSynthesisOutputFormat = 'audio-24khz-160kbitrate-mono-mp3';
+    const audioConfig = AudioConfig.fromAudioFileOutput(outputFile);
+    const synthesizer = new SpeechSynthesizer(speechConfig, audioConfig);
+
+    const result = await new Promise((resolve, reject) => {
+      synthesizer.speakTextAsync(
+        textToSpeak,
+        (result) => {
+          synthesizer.close();
+          if (result.reason === ResultReason.SynthesizingAudioCompleted) {
+            resolve(result);
+          } else {
+            reject(new Error(`Synthesis failed: ${result.errorDetails}`));
+          }
+        },
+        (error) => {
+          synthesizer.close();
+          reject(error);
+        }
+      );
+    });
+
+    // Return the audio file URL
+    const audioUrl = `${process.env.API_BASE_URL || 'http://localhost:5000'}/audio/file${number}.mp3`;
+    res.status(200).json({
+      message: 'Audio synthesized successfully.',
+      audioUrl,
+    });
+  } catch (error) {
+    console.error('TTS error:', error);
+    res.status(500).json({ error: 'Failed to synthesize audio.' });
   }
 };
