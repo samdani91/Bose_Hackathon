@@ -1,6 +1,7 @@
 import Question from "../models/Question.js";
 import { generateTagPrompt } from "../utils/prompts.js";
 import axios from "axios";
+import Tag from "../models/Tag.js";
 
 export const createQuestion = async (req, res) => {
   try {
@@ -29,6 +30,20 @@ export const createQuestion = async (req, res) => {
 
     const tagsString = response.data.candidates[0].content.parts[0].text;
     const tags = tagsString.split(',').map(tag => tag.trim());
+
+    tags.forEach(async (tagName) => {
+      const existingTag = await Tag.findOne({name: tagName});
+      if (!existingTag) {
+        const newTag = new Tag({ name: tagName });
+        await newTag.save();
+      }else{
+        await new Tag.findOneAndUpdate(
+          { name: tagName },
+          { $inc: { count: 1 } },
+          { new: true }
+        );
+      }
+    });
 
     const question = new Question({
       user_id: userId,
@@ -175,5 +190,31 @@ export const getAllQuestions = async (req, res) => {
   } catch (error) {
     console.error("Error fetching questions:", error);
     res.status(500).json({ message: "Server error while fetching questions." });
+  }
+}
+
+export const getQuestionsByTags = async (req, res) => {
+  try {
+    const { tags } = req.body;
+    if (!tags) {
+      return res.status(400).json({ message: "Tags are required." });
+    }
+    if (!Array.isArray(tags)) {
+      return res.status(400).json({ message: "Tags should be an array." });
+    }
+    if (tags.length === 0) {
+      return res.status(400).json({ message: "Tags array cannot be empty." });
+    }
+
+    const questions = await Question.find({ tags: { $in: [tags] } }).sort({ createdAt: -1 });
+
+    if (questions.length === 0) {
+      return res.status(404).json({ message: "No questions found for the given tags." });
+    }
+
+    res.status(200).json({ message: "Questions fetched successfully.", questions });
+  } catch (error) {
+    console.error("Error fetching questions by tags:", error);
+    res.status(500).json({ message: "Server error while fetching questions by tags." });
   }
 }
