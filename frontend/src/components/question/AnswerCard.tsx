@@ -177,7 +177,7 @@ export const AnswerCard: React.FC<AnswerCardProps> = ({ answer, setIsUpvoted }) 
                   'Content-Type': 'application/json',
                   'Accept': 'application/json',
                 },
-                body: JSON.stringify({ userId: answer.userId, point: 15 }),
+                body: JSON.stringify({ userId: answer.userId, points: 15 }),
                 credentials: 'include',
               })
         } catch (error) {
@@ -212,7 +212,7 @@ export const AnswerCard: React.FC<AnswerCardProps> = ({ answer, setIsUpvoted }) 
                   'Content-Type': 'application/json',
                   'Accept': 'application/json',
                 },
-                body: JSON.stringify({ userId: answer.userId, point: 5 }),
+                body: JSON.stringify({ userId: answer.userId, points: 5 }),
                 credentials: 'include',
               })
         } catch (error) {

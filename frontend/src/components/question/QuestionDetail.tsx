@@ -279,7 +279,7 @@ export const QuestionDetail = ({ question, setVoteChange }: QuestionDetailProps)
           'Content-Type': 'application/json',
           'Accept': 'application/json',
         },
-        body: JSON.stringify({ userId: currentQuestion.user_id, point: 10 }),
+        body: JSON.stringify({ userId: currentQuestion.user_id, points: 10 }),
         credentials: 'include',
       })
     } catch (error) {
@@ -321,7 +321,7 @@ export const QuestionDetail = ({ question, setVoteChange }: QuestionDetailProps)
           'Content-Type': 'application/json',
           'Accept': 'application/json',
         },
-        body: JSON.stringify({ userId: currentQuestion.user_id, point: -2 }),
+        body: JSON.stringify({ userId: currentQuestion.user_id, points: -2 }),
         credentials: 'include',
       })
     } catch (error) {
