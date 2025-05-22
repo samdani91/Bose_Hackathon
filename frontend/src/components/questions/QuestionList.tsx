@@ -6,9 +6,11 @@ import { ArrowUpDown, Filter, Search } from 'lucide-react';
 
 interface QuestionListProps {
   questions: Question[];
+  setVoteChange: React.Dispatch<React.SetStateAction<boolean>>;
+
 }
 
-export const QuestionList: React.FC<QuestionListProps> = ({ questions: initialQuestions }) => {
+export const QuestionList: React.FC<QuestionListProps> = ({ questions: initialQuestions , setVoteChange}) => {
   const [questions, setQuestions] = useState<Question[]>(initialQuestions);
   const [sortBy, setSortBy] = useState<'newest' | 'votes' | 'activity'>('newest');
   const [showFilters, setShowFilters] = useState(false);
@@ -115,7 +117,7 @@ export const QuestionList: React.FC<QuestionListProps> = ({ questions: initialQu
 
       <div>
         {questions.length > 0 ? (
-          questions.map((question) => <QuestionCard key={question._id} question={question} />)
+          questions.map((question) => <QuestionCard key={question._id} question={question} setVoteChange={setVoteChange}/>)
         ) : (
           <div className="text-center py-10 bg-white rounded-lg shadow-sm">
             <h3 className="text-lg font-medium text-slate-900">No questions found</h3>

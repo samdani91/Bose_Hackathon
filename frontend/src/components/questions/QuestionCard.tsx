@@ -8,6 +8,8 @@ import { toast } from 'sonner';
 
 interface QuestionCardProps {
   question: Question;
+  setVoteChange: React.Dispatch<React.SetStateAction<boolean>>;
+
 }
 
 // Function to format date as relative time (e.g., "2 years ago")
@@ -40,7 +42,7 @@ const formatRelativeDate = (date: string | Date): string => {
   return 'just now';
 };
 
-export const QuestionCard: React.FC<QuestionCardProps> = ({ question }) => {
+export const QuestionCard: React.FC<QuestionCardProps> = ({ question, setVoteChange }) => {
 
   const [user, setUser] = useState<User>();
 
@@ -99,6 +101,7 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({ question }) => {
     const data = await response.json();
     question.upvotes = data.upvotes;
     toast.success('Upvoted successfully!');
+    setVoteChange(true)
   } catch (error) {
     console.error('Upvote error:', error);
     if (error instanceof Error) {
@@ -143,7 +146,7 @@ const handleDownvote = async () => {
     
     question.downvotes = data.downvotes;
     toast.success('Downvoted successfully!');
-    
+    setVoteChange(true)
   } catch (error) {
     console.error('Full error:', error);
     
@@ -165,7 +168,7 @@ const handleDownvote = async () => {
           {/* Voting and stats column - ~16.67% (1/6) */}
           <div className="col-span-1 px-2 py-2 text-center flex flex-col items-center justify-start gap-2 border-r border-slate-100">
             <div className="flex flex-col items-center">
-              <button className="text-slate-400 hover:text-indigo-500 focus:outline-none transition-colors">
+              <button className="text-slate-400 hover:text-indigo-500 focus:outline-none transition-colors" onClick={handleUpvote}>
                 <ArrowUp className="h-6 w-6 text-emerald-600" />
               </button>
               <div className="flex items-center mx-3 flex-col md:my-3 md:mx-0">
@@ -179,7 +182,7 @@ const handleDownvote = async () => {
                     {question.downvotes}
                   </span>
                 </div>
-              <button className="text-slate-400 hover:text-slate-500 focus:outline-none transition-colors" >
+              <button className="text-slate-400 hover:text-slate-500 focus:outline-none transition-colors" onClick={handleDownvote}>
                 <ArrowDown className="h-6 w-6 text-red-600" />
               </button>
             </div>

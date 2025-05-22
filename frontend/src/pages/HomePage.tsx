@@ -11,6 +11,7 @@ import { toast } from 'sonner';
 export const HomePage: React.FC = () => {
 
   const [questions, setQuestions] = useState<Question[]>([]);
+  const [voteChange,setVoteChange] = useState(true);
 
   const fetchQuestions = async () => {
     const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/question`, {
@@ -45,12 +46,15 @@ export const HomePage: React.FC = () => {
 
   useEffect(() => {
     try {
-      fetchQuestions();
+      if( voteChange){
+        fetchQuestions();
+        setVoteChange(false)
+      } 
     } catch (error) {
       console.error('Error fetching questions:', error);
       toast.error('Failed to load questions. Please try again later.');
     }
-  }, []);
+  }, [voteChange]);
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
       <div className="flex flex-col md:flex-row gap-6">
@@ -70,7 +74,7 @@ export const HomePage: React.FC = () => {
             <h1 className="text-2xl font-bold text-slate-900">Top Questions</h1>
             <AskQuestionButton />
           </div>
-          {questions.length > 0 && <QuestionList questions={questions}/>}
+          {questions.length > 0 && <QuestionList questions={questions} setVoteChange={setVoteChange}/>}
         </div>
 
         {/* Right sidebar */}
