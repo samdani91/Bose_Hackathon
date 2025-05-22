@@ -372,7 +372,7 @@ export const getUserId = async (req, res) => {
 
 export const getAllUsers = async (req, res) => {
     try {
-        const users = await User.find({}, 'name _id image').sort({ createdAt: -1 });
+        const users = await User.find({}, 'name _id image occupation').sort({ createdAt: -1 });
         res.status(200).json({ message: "Users fetched successfully.", users });
     } catch (error) {
         console.error("Error fetching users:", error);

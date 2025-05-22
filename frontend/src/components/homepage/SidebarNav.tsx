@@ -5,7 +5,7 @@ import { Link } from '../ui/Link';
 export const SidebarNav: React.FC = () => {
   const navItems = [
     { icon: <Home className="h-5 w-5" />, label: 'Home', href: '/' },
-    { icon: <Globe className="h-5 w-5" />, label: 'All Questions', href: '/questions' },
+    { icon: <Globe className="h-5 w-5" />, label: 'All Questions', href: '/allQuestions' },
     { 
       icon: <BrainCircuit className="h-5 w-5" />, // Changed to Brain icon for brainstorming
       label: 'Quizzes', 
@@ -13,7 +13,7 @@ export const SidebarNav: React.FC = () => {
       highlight: false // Special flag for highlighting
     },
     { icon: <Tag className="h-5 w-5" />, label: 'Tags', href: '/tags' },
-    { icon: <Users className="h-5 w-5" />, label: 'Users', href: '/users' },
+    { icon: <Users className="h-5 w-5" />, label: 'Users', href: '/allUsers' },
     { icon: <Award className="h-5 w-5" />, label: 'Badges', href: '/badges' },
     { icon: <BookOpen className="h-5 w-5" />, label: 'Help', href: '/help' },
   ];

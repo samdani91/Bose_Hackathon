@@ -11,6 +11,8 @@ import { ProtectedRoute } from './components/ProtectedRoutes';
 import QuestionPage from './components/question/QuestionPage';
 import { QuizPage } from './quiz/pages/QuizPage'; 
 import { LeaderboardPage } from './quiz/pages/LeaderboardPage';
+import AllQuestionListPage from './pages/question/AllQuestionListPage';
+import AllUserListPage from './pages/user/AllUserListPage';
 
 function App() {
   return (
@@ -30,6 +32,8 @@ function App() {
         <Route path="/register" element={<MainLayout><Register /></MainLayout>} />
         <Route path="/forgot-password" element={<MainLayout><ForgotPassword /></MainLayout>} />
         <Route path="/question/:id" element={<MainLayout> <QuestionPage /> </MainLayout>} />
+        <Route path="/allQuestions" element={<MainLayout> <AllQuestionListPage/> </MainLayout>} />
+        <Route path="/allUsers" element={<MainLayout> <AllUserListPage/></MainLayout>} />
 
         <Route path="/quizzes" element={<MainLayout><QuizPage /></MainLayout>} />
         <Route path="/quizzes/leaderboard" element={<MainLayout><LeaderboardPage /></MainLayout>} />

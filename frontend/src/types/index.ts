@@ -14,17 +14,17 @@ export interface Badge {
 }
 
 export interface Question {
-  createdAt: string,
-  description: string,
-  downvotes: number,
-  images: string[],
-  tags: string[],
-  title: string,
-  updatedAt: string,
-  upvotes: number,
-  user_id: string,
-  viewsCount: number,
-  _id: string,
+  _id: string;
+  user_id: string;
+  title: string;
+  description?: string;
+  tags: string[];
+  images: string[];
+  createdAt: string;
+  updatedAt: string;
+  upvotes: number;
+  downvotes: number;
+  viewsCount: number;
 }
 
 export interface Answer {

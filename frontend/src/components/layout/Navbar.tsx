@@ -66,7 +66,7 @@ const Navbar: React.FC = () => {
     };
 
     fetchUserId();
-  }, []);
+  }, [userId]);
 
   useEffect(() => {
     const fetchUsers = async () => {

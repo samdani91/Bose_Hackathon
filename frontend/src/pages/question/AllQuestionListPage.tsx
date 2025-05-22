@@ -1,18 +1,54 @@
 import React, { useState, useEffect } from 'react';
-import { QuestionCard } from './QuestionCard';
-import { Button } from '../ui/Button';
-import type { Question } from '../../types';
+import { QuestionCard } from '../../components/questions/QuestionCard';
+import { Button } from '../../components/ui/Button';
 import { ArrowUpDown, Filter, Search } from 'lucide-react';
+import { toast } from 'sonner';
 
-interface QuestionListProps {
-  questions: Question[];
+interface Question {
+  _id: string;
+  user_id: string; // Added to match QuestionSchema and QuestionCard requirements
+  title: string;
+  description?: string;
+  tags: string[];
+  images: string[];
+  createdAt: string;
+  updatedAt: string;
+  upvotes: number;
+  downvotes: number;
+  viewsCount: number; // Added to match QuestionSchema and QuestionCard requirements
 }
 
-export const QuestionList: React.FC<QuestionListProps> = ({ questions: initialQuestions }) => {
-  const [questions, setQuestions] = useState<Question[]>(initialQuestions);
+const AllQuestionListPage: React.FC = () => {
+  const [questions, setQuestions] = useState<Question[]>([]);
+  const [initialQuestions, setInitialQuestions] = useState<Question[]>([]);
   const [sortBy, setSortBy] = useState<'newest' | 'votes' | 'activity'>('newest');
   const [showFilters, setShowFilters] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchQuestions = async () => {
+      try {
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/question/`, {
+          method: 'GET',
+          credentials: 'include',
+        });
+        const data = await response.json();
+        if (response.ok) {
+          setQuestions(data.questions || []);
+          setInitialQuestions(data.questions || []);
+        } else {
+          toast.error('Failed to fetch questions');
+        }
+      } catch (err) {
+        toast.error('Something went wrong while fetching questions');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchQuestions();
+  }, []);
 
   useEffect(() => {
     if (searchQuery.length >= 3) {
@@ -29,22 +65,22 @@ export const QuestionList: React.FC<QuestionListProps> = ({ questions: initialQu
   }, [searchQuery, initialQuestions]);
 
   const handleSort = (sortType: 'newest' | 'votes' | 'activity') => {
-    // setSortBy(sortType);
-    // const sortedQuestions = [...questions];
+    setSortBy(sortType);
+    const sortedQuestions = [...questions];
 
-    // if (sortType === 'newest') {
-    //   sortedQuestions.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-    // } else if (sortType === 'votes') {
-    //   sortedQuestions.sort((a, b) => b.votes - a.votes);
-    // } else if (sortType === 'activity') {
-    //   sortedQuestions.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
-    // }
+    if (sortType === 'newest') {
+      sortedQuestions.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    } else if (sortType === 'votes') {
+      sortedQuestions.sort((a, b) => b.upvotes - b.downvotes - (a.upvotes - a.downvotes));
+    } else if (sortType === 'activity') {
+      sortedQuestions.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+    }
 
-    // setQuestions(sortedQuestions);
+    setQuestions(sortedQuestions);
   };
 
   return (
-    <div className="space-y-4">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
       <div className="bg-white p-4 rounded-lg shadow mb-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <form className="flex-grow">
@@ -72,15 +108,6 @@ export const QuestionList: React.FC<QuestionListProps> = ({ questions: initialQu
               <Filter className="h-4 w-4 mr-1" />
               Filters
             </Button>
-            {/* <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center"
-            >
-              <ArrowUpDown className="h-4 w-4 mr-1" />
-              Sort
-            </Button> */}
           </div>
         </div>
 
@@ -114,7 +141,11 @@ export const QuestionList: React.FC<QuestionListProps> = ({ questions: initialQu
       </div>
 
       <div>
-        {questions.length > 0 ? (
+        {loading ? (
+          <div className="text-center py-10 bg-white rounded-lg shadow-sm">
+            <h3 className="text-lg font-medium text-slate-900">Loading questions...</h3>
+          </div>
+        ) : questions.length > 0 ? (
           questions.map((question) => <QuestionCard key={question._id} question={question} />)
         ) : (
           <div className="text-center py-10 bg-white rounded-lg shadow-sm">
@@ -126,3 +157,5 @@ export const QuestionList: React.FC<QuestionListProps> = ({ questions: initialQu
     </div>
   );
 };
+
+export default AllQuestionListPage;
