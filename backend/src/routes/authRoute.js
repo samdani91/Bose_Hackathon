@@ -13,6 +13,6 @@ router.post("/changePassword", authenticateToken ,changePassword);
 router.post("/resetForgotPassword", resetForgotPassword);
 router.post("/logout",authenticateToken,logout);
 router.get("/getUserId", authenticateToken, getUserId);
-router.get("/allUsers", getAllUsers); // New route to fetch all users
+router.get("/allUsers", getAllUsers);
 
 export default router;

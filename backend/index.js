@@ -37,6 +37,7 @@ app.use("/api/answer",authenticateToken, answerRouter);
 app.use("/api/question", questionRouter);
 app.use("/api/vote", authenticateToken, voteRouter);
 app.use("/api/system", systemRouter);
+app.use('/audio', express.static('public/audio'));
 
 app.listen(port, () => {
     console.log(`Backend is running on port ${port}`);
