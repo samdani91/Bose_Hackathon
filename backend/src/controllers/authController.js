@@ -192,6 +192,8 @@ export const getUser = async (req, res) => {
                 image: existingUser.image,
                 bio:existingUser.bio,
                 occupation:existingUser.occupation,
+                institution:existingUser.institution,
+                classs:existingUser.classs,
             },
         })
 
@@ -211,7 +213,7 @@ export const updateUser = async (req, res) => {
             return res.status(401).json({ message: "You are not authorized to update this profile!" });
         }
 
-        const { name, email, occupation, bio, image } = req.body;
+        const { name, email, occupation, bio, image, institution, classs } = req.body;
 
         if (!name || !name.trim()) {
             return res.status(400).json({
@@ -244,6 +246,8 @@ export const updateUser = async (req, res) => {
             name: name.trim(),
             email: email.trim(),
             occupation: occupation ? occupation.trim() : '',
+            institution: institution ? institution.trim() : '',
+            classs:classs ? classs.trim() : '',
             bio: bio ? bio.trim() : '',
             image: image || ''
         };

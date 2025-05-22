@@ -177,3 +177,17 @@ export const getAllQuestions = async (req, res) => {
     res.status(500).json({ message: "Server error while fetching questions." });
   }
 }
+
+export const getQuestionsByUserId = async (req, res) => {
+  try {
+    const {id} = req.params;
+    if (!id) {
+      return res.status(400).json({ message: "User ID is required." });
+    }
+    const questions = await Question.find({ user_id: id }).sort({ createdAt: -1 });
+    res.status(200).json({ message: "Questions fetched successfully.", questions });
+  } catch (error) {
+    console.error("Error fetching questions by user ID:", error);
+    res.status(500).json({ message: "Server error while fetching questions by user ID." });
+  }
+};

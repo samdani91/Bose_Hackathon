@@ -22,7 +22,7 @@ const Navbar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
   const [loggedIn, setLoggedIn] = useState(localStorage.getItem("isAuthenticatedToFactRush") === "true");
-  const [userId, setUserId] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<{ title: string; id: string; type: string; image?: string }[]>([]);
   const [users, setUsers] = useState<UserData[]>([]);
@@ -65,8 +65,8 @@ const Navbar: React.FC = () => {
       }
     };
 
-    fetchUserId();
-  }, [userId]);
+    if(loggedIn) fetchUserId();
+  }, [loggedIn]);
 
   useEffect(() => {
     const fetchUsers = async () => {
