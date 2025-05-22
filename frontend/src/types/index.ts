@@ -29,12 +29,12 @@ export interface Question {
 
 export interface Answer {
   userId: string;
-  upvoteCount: number;
+  upVoteCount: number;
   text: string;
   references: string[];
   questionId: string;
   createdAt: string;
-  downvoteCount: number;
+  downVoteCount: number;
   id: string;
 }
 
