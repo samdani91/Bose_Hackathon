@@ -9,6 +9,7 @@ const UserSchema = new mongoose.Schema({
     classs: { type: String },
     password: { type: String, required: true },
     image: { type: String, default: "" },
+    streak: { type: Number, default: 0 },
 }, {
     timestamps: true,
 });
