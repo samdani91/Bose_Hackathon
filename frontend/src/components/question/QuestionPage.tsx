@@ -2,14 +2,13 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { QuestionDetail } from './QuestionDetail';
 import type { Question } from '../../types';
-import { questions } from '@/data/mockData';
-// import { c } from 'node_modules/vite/dist/node/moduleRunnerTransport.d-DJ_mE5sf';
 
 const QuestionPage = () => {
   const { id } = useParams<{ id: string }>();
   const [question, setQuestion] = useState<Question | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [voteChange, setVoteChange] = useState(true);
 
   useEffect(() => {
     const fetchQuestion = async () => {
@@ -36,8 +35,11 @@ const QuestionPage = () => {
       }
     };
 
-    fetchQuestion();
-  }, [id]);
+    if(voteChange){
+      fetchQuestion();
+      setVoteChange(false);
+    }
+  }, [id, voteChange]);
 
   if (loading) {
     return <div className="p-8 text-center">Loading question...</div>;
@@ -51,7 +53,7 @@ const QuestionPage = () => {
     return <div className="p-8 text-center">Question not found</div>;
   }
 
-  return <QuestionDetail question={question} />;
+  return <QuestionDetail question={question} setVoteChange={setVoteChange} />;
 };
 
 export default QuestionPage;

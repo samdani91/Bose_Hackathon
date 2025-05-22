@@ -22,9 +22,9 @@ const AllQuestionListPage: React.FC = () => {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [initialQuestions, setInitialQuestions] = useState<Question[]>([]);
   const [sortBy, setSortBy] = useState<'newest' | 'votes' | 'activity'>('newest');
-  const [showFilters, setShowFilters] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
+  const [voteChange,setVoteChange] = useState(true);
 
   useEffect(() => {
     const fetchQuestions = async () => {
@@ -47,8 +47,11 @@ const AllQuestionListPage: React.FC = () => {
       }
     };
 
-    fetchQuestions();
-  }, []);
+    if( voteChange ){
+      fetchQuestions();
+      setVoteChange(false)
+    } 
+  }, [voteChange]);
 
   useEffect(() => {
     if (searchQuery.length >= 3) {
@@ -97,47 +100,7 @@ const AllQuestionListPage: React.FC = () => {
               />
             </div>
           </form>
-
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center"
-            >
-              <Filter className="h-4 w-4 mr-1" />
-              Filters
-            </Button>
-          </div>
         </div>
-
-        {showFilters && (
-          <div className="mt-4 pt-4 border-t border-slate-200">
-            <div className="flex flex-wrap gap-2">
-              <Button
-                variant={sortBy === 'newest' ? 'primary' : 'outline'}
-                size="sm"
-                onClick={() => handleSort('newest')}
-              >
-                Newest
-              </Button>
-              <Button
-                variant={sortBy === 'votes' ? 'primary' : 'outline'}
-                size="sm"
-                onClick={() => handleSort('votes')}
-              >
-                Most Votes
-              </Button>
-              <Button
-                variant={sortBy === 'activity' ? 'primary' : 'outline'}
-                size="sm"
-                onClick={() => handleSort('activity')}
-              >
-                Recent Activity
-              </Button>
-            </div>
-          </div>
-        )}
       </div>
 
       <div>
@@ -146,7 +109,7 @@ const AllQuestionListPage: React.FC = () => {
             <h3 className="text-lg font-medium text-slate-900">Loading questions...</h3>
           </div>
         ) : questions.length > 0 ? (
-          questions.map((question) => <QuestionCard key={question._id} question={question} />)
+          questions.map((question) => <QuestionCard key={question._id} question={question} setVoteChange={setVoteChange}/>)
         ) : (
           <div className="text-center py-10 bg-white rounded-lg shadow-sm">
             <h3 className="text-lg font-medium text-slate-900">No questions found</h3>

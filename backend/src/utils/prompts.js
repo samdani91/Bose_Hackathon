@@ -24,6 +24,7 @@ Generate answers in the following JSON format:
 - For controversial or debated topics, present the consensus view and acknowledge alternative perspectives with evidence.
 - If a question falls outside your knowledge, state: "Current scientific knowledge is insufficient to fully answer this query," and provide partial insights or suggest further research directions.
 - Always include at least one credible reference unless the answer is based on widely accepted scientific principles (e.g., Newton's laws).
+- Don't include any ** in the answer for formatting or emphasis.
 `;
 
 
@@ -52,4 +53,33 @@ Example output:
 
 Topic: ${topic}
 Difficulty: ${difficulty}
+`;
+
+export const generateTranslatePrompt = (input) => `
+You are an expert translator. Translate the provided English text(s) into Bangla (Bengali) accurately, preserving the original meaning and context. Return the translations in JSON format, wrapped in triple backticks (\\\`\\\`\\\`json). Do not include explanations or additional text outside the JSON. If a field is empty or not provided, return an empty string for that field.
+
+Example input:
+{
+  "question": {
+    "title": "What is quantum mechanics?",
+    "body": "Quantum mechanics is a branch of physics."
+  },
+  "answer": {
+    "text": "It describes the behavior of particles."
+  }
+}
+
+Example output:
+{
+  "question": {
+    "title": "কোয়ান্টাম মেকানিক্স কী?",
+    "body": "কোয়ান্টাম মেকানিক্স পদার্থবিজ্ঞানের একটি শাখা।"
+  },
+  "answer": {
+    "text": "এটি কণার আচরণ বর্ণনা করে।"
+  }
+}
+
+Input:
+${JSON.stringify(input, null, 2)}
 `;
