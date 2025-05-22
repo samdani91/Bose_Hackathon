@@ -34,8 +34,8 @@ export const Leaderboard = ({ entries }: LeaderboardProps) => {
 
     return (
       <span className={`ml-2 px-2 py-1 rounded-full text-xs font-semibold flex items-center gap-1 ${badgeConfig[position].color}`}>
-        {badgeConfig[position].icon}
-        {badgeConfig[position].label}
+        {/* {badgeConfig[position].icon}
+        {badgeConfig[position].label} */}
       </span>
     );
   };

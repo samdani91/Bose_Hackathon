@@ -124,6 +124,8 @@ export const QuizPage = () => {
           </span>
         </div>
         
+
+        
         <QuizCard 
           question={currentQuestion}
           onAnswer={handleAnswer}
