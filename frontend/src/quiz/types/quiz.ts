@@ -1,11 +1,7 @@
 export interface QuizQuestion {
-  id: string;
   question: string;
   options: string[];
-  correctAnswer: number; // index of correct option
-  imageUrl?: string;
-  category: string;
-  difficulty: 'easy' | 'medium' | 'hard';
+  correctAnswer: string;
 }
 
 export interface UserStats {

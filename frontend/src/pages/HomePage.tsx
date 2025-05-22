@@ -25,7 +25,7 @@ export const HomePage: React.FC = () => {
       return;
     }
     const data = await response.json();
-    console.log('Fetched questions:', data.questions);
+    // console.log('Fetched questions:', data.questions);
     // const newQuestions = (Array.isArray(data.questions) ? data.questions : []).map(q => ({
     //   id: q._id,
     //   title: q.title,

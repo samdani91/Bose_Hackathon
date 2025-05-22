@@ -51,18 +51,18 @@ export const Leaderboard = ({ entries }: LeaderboardProps) => {
             <ArrowLeft size={18} />
             Back to Quiz
           </Link>
-          <h1 className="text-2xl font-bold text-indigo-800">Science Leaderboard</h1>
-          <div className="w-24"></div> {/* Spacer for alignment */}
+          {/* <h1 className="text-2xl font-bold text-indigo-800">Science Leaderboard</h1> */}
+          {/* <div className="w-24"></div>  */}
         </div>
 
         <div className="bg-white rounded-xl shadow-md overflow-hidden">
           <div className="bg-gradient-to-r from-indigo-600 to-purple-600 p-4">
             <h2 className="text-white text-xl font-bold flex items-center gap-2">
               <Trophy className="w-5 h-5" />
-              Global Leaderboard
+              Leaderboard
             </h2>
             <p className="text-indigo-100 text-sm mt-1">
-              Top scientists by consecutive correct answers
+              Top science enthusiasts by consecutive correct answers
             </p>
           </div>
           
