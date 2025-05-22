@@ -13,6 +13,7 @@ import { QuizPage } from './quiz/pages/QuizPage';
 import { LeaderboardPage } from './quiz/pages/LeaderboardPage';
 import AllQuestionListPage from './pages/question/AllQuestionListPage';
 import AllUserListPage from './pages/user/AllUserListPage';
+import TagPage from './pages/TagPage';
 
 function App() {
   return (
@@ -34,7 +35,7 @@ function App() {
         <Route path="/question/:id" element={<MainLayout> <QuestionPage /> </MainLayout>} />
         <Route path="/allQuestions" element={<MainLayout> <AllQuestionListPage/> </MainLayout>} />
         <Route path="/allUsers" element={<MainLayout> <AllUserListPage/></MainLayout>} />
-
+        <Route path="/tags" element={<MainLayout> <TagPage/></MainLayout>} />
 
         <Route element={<ProtectedRoute />} >
           <Route path="/quizzes" element={<MainLayout><QuizPage /></MainLayout>} />

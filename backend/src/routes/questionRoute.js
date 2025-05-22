@@ -7,7 +7,7 @@ const router = express.Router();
 
 router.post("/create", authenticateToken, createQuestion);
 router.post("/quiz", authenticateToken, generateQuiz);
-router.post("tags", getQuestionsByTags);
+router.post("/tag", getQuestionsByTags);
 router.get("/", getAllQuestions);
 router.post("/update/:id",authenticateToken, updateQuestion);
 router.delete("/delete/:id",authenticateToken, deleteQuestion);

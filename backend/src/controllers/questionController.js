@@ -216,6 +216,7 @@ export const getAllQuestions = async (req, res) => {
 export const getQuestionsByTags = async (req, res) => {
   try {
     const { tags } = req.body;
+    console.log(tags)
     if (!tags) {
       return res.status(400).json({ message: "Tags are required." });
     }

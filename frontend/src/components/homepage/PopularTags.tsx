@@ -21,7 +21,7 @@ export const PopularTags: React.FC<PopularTagsProps> = () => {
     const fetchTags = async () => {
       try {
         setLoading(true);
-        const response = await fetch('http://localhost:5000/api/system/getTags');
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/system/getTags`);
         
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -64,7 +64,7 @@ export const PopularTags: React.FC<PopularTagsProps> = () => {
       <h3 className="text-lg font-medium text-slate-900 mb-3">Popular Tags</h3>
       <div className="flex flex-wrap gap-2">
         {tags.map(tag => (
-          <Link key={tag._id} to={`/tags/${tag.name}`}>
+          <Link key={tag._id} to={`/tags`}>
             <Badge variant="primary" className="cursor-pointer hover:bg-indigo-200 transition-colors">
               {tag.name} <span className="ml-1 text-indigo-600">×{tag.count}</span>
             </Badge>
