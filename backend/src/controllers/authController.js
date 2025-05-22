@@ -211,7 +211,7 @@ export const updateUser = async (req, res) => {
             return res.status(401).json({ message: "You are not authorized to update this profile!" });
         }
 
-        const { name, email, occupation, bio, profileImage } = req.body;
+        const { name, email, occupation, bio, image } = req.body;
 
         if (!name || !name.trim()) {
             return res.status(400).json({
@@ -245,7 +245,7 @@ export const updateUser = async (req, res) => {
             email: email.trim(),
             occupation: occupation ? occupation.trim() : '',
             bio: bio ? bio.trim() : '',
-            image: profileImage || ''
+            image: image || ''
         };
 
         const updatedUser = await User.findByIdAndUpdate(
