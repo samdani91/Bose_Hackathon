@@ -25,7 +25,7 @@ interface UserResponse {
 }
 
 export const QuestionDetail = ({ question }: QuestionDetailProps) => {
-  console.log('QuestionDetail question:', question);
+  // console.log('QuestionDetail question:', question);
   const [currentQuestion, setCurrentQuestion] = useState<Question>(question);
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [voteStatus, setVoteStatus] = useState<'up' | 'down' | null>(null);
