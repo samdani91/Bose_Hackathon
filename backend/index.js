@@ -36,7 +36,7 @@ app.use("/api/auth", authRouter);
 app.use("/api/answer",authenticateToken, answerRouter);
 app.use("/api/question", authenticateToken, questionRouter);
 app.use("/api/vote", authenticateToken, voteRouter);
-app.use("/api/system",systemRouter);
+app.use("/api/system", systemRouter);
 
 app.listen(port, () => {
     console.log(`Backend is running on port ${port}`);

@@ -183,3 +183,36 @@ export const downVoteAnswer = async (answerId) => {
     console.error('Error downvoting answer:', error);
   }
 }
+
+export const getAllAnswers = async (req, res) => {
+  try {
+    const { questionId } = req.params;
+
+    if (!questionId) {
+      return res.status(400).json({ error: 'Question ID is required' });
+    }
+
+    const answers = await Answer.find({ questionId })
+      .sort({ createdAt: -1 });
+    if (!answers || answers.length === 0) {
+      return res.status(404).json({ error: 'No answers found for this question' });
+    }
+    const formattedAnswers = answers.map(answer => ({
+      id: answer._id,
+      text: answer.text,
+      userId: answer.userId,
+      questionId: answer.questionId,
+      upVoteCount: answer.upVoteCount,
+      downVoteCount: answer.downVoteCount,
+      createdAt: answer.createdAt,
+      references: answer.references,
+    }));
+    res.status(200).json({
+      message: 'Answers fetched successfully',
+      answers: formattedAnswers,
+    });
+  }catch (error) {
+    console.error('Error fetching answers:', error);
+    res.status(500).json({ error: 'Failed to fetch answers' });
+  }
+}

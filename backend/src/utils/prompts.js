@@ -33,3 +33,23 @@ You are an expert AI assistant specializing in scientific queries, designed to p
 Given the following question, return a comma-separated list of up to three most appropriate topics that represent the scientific fields or subjects it belongs to (e.g., "Physics, Mechanics, Quantum Physics" or "Biology, Genetics, Microbiology etc."). 
 
 Return only the list of topics/tags, without any explanation or additional text.`
+
+
+export const generateQuizPrompt = (topic, difficulty) => `
+You are an expert quiz generator. Generate a single quiz question on the specified topic with a difficulty level of ${difficulty} (Easy, Medium, or Hard). The question should have four answer options (labeled A, B, C, D) and specify the correct answer. Return the response in JSON format, wrapped in triple backticks (\\\`\\\`\\\`json). Ensure the question is clear, concise, and appropriate for the difficulty level. Do not include any explanations or additional text outside the JSON.
+
+Example output:
+{
+  "question": "What is the primary source of energy for Earth's climate system?",
+  "options": {
+    "A": "The Sun",
+    "B": "Geothermal energy",
+    "C": "Nuclear energy",
+    "D": "Wind energy"
+  },
+  "correctAnswer": "A"
+}
+
+Topic: ${topic}
+Difficulty: ${difficulty}
+`;
