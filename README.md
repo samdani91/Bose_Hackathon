@@ -92,7 +92,7 @@ FactRush is designed to **empower and scale**:
 - 🗣️ **Voice-based Q&A input** for low-literacy users
 - 🧪 **Citizen science** data collection platform
 - 🌐 **Regional dialect support** and multilingual expansion
-- 🧬 AR/VR-based science labs and **offline learning modules**
+
 
 ---
 
