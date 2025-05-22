@@ -26,7 +26,6 @@ export const HomePage: React.FC = () => {
       return;
     }
     const data = await response.json();
-    console.log('Fetched questions:', data.questions);
 
     setQuestions(data.questions);
   };

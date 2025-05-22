@@ -35,8 +35,15 @@ function App() {
         <Route path="/allQuestions" element={<MainLayout> <AllQuestionListPage/> </MainLayout>} />
         <Route path="/allUsers" element={<MainLayout> <AllUserListPage/></MainLayout>} />
 
-        <Route path="/quizzes" element={<MainLayout><QuizPage /></MainLayout>} />
-        <Route path="/quizzes/leaderboard" element={<MainLayout><LeaderboardPage /></MainLayout>} />
+
+        <Route element={<ProtectedRoute />} >
+          <Route path="/quizzes" element={<MainLayout><QuizPage /></MainLayout>} />
+        </Route>
+        <Route element={<ProtectedRoute />} >
+          <Route path="/quizzes/leaderboard" element={<MainLayout><LeaderboardPage /></MainLayout>} />
+        </Route>
+
+
       </Routes>
     </Router>
   );
