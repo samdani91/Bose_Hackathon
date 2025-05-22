@@ -64,7 +64,7 @@ It empowers users to:
 ### ♿ Accessibility & Inclusion
 - 🔄 English-to-Bangla translation
 - 🧑‍🤝‍🧑 Guest access mode (no login required to explore)
-
+- 🔊 AI model based text-to-speech
 ---
 
 ## 🛠️ Technology Stack
@@ -75,7 +75,7 @@ It empowers users to:
 | Backend     | `Node.js`                       |
 | Database    | `MongoDB`                       |
 | AI Features | `Gemini API` (answers, tags, quizzes, translation) |
-
+| Text to speech    | `EN-US Jenny Neural model`                       |
 
 ---
 

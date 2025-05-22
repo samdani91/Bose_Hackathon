@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Input } from '../ui/Input';
 import { Button } from '../ui/Button';
-import { Mail, User, Briefcase, Save, Edit, School, BookOpen } from 'lucide-react';
+import { Mail, User, Briefcase, Save, Edit, School, BookOpen, Award, Star, Trophy, Medal, Crown } from 'lucide-react';
 import { toast } from 'sonner';
 import { useParams, Link } from 'react-router-dom';
 
@@ -16,6 +16,7 @@ interface UserData {
   classs: string;
   bio: string;
   image?: string;
+  reputation: number;
 }
 
 interface Question {
@@ -44,6 +45,13 @@ interface ProfileFormProps {
   isOwnProfile: boolean;
 }
 
+interface Badge {
+  name: string;
+  icon: React.ReactNode;
+  range: string;
+  description: string;
+}
+
 export const ProfileForm: React.FC<ProfileFormProps> = ({ isOwnProfile }) => {
   const { id } = useParams<{ id: string }>();
   const [isEditing, setIsEditing] = useState(false);
@@ -54,6 +62,41 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ isOwnProfile }) => {
   const [profileImageFile, setProfileImageFile] = useState<File | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [activeTab, setActiveTab] = useState<'personal' | 'questions'>('personal');
+  const [reputationPoints, setReputationPoints] = useState<number>(0);
+  const [currentBadge, setCurrentBadge] = useState<Badge | null>(null);
+
+  const badges: Badge[] = [
+    {
+      name: 'Newcomer',
+      icon: <Star className="h-6 w-6 text-yellow-500" />,
+      range: '0-99 points',
+      description: 'Welcome to the community! Start asking and answering to earn more points.',
+    },
+    {
+      name: 'Contributor',
+      icon: <Award className="h-6 w-6 text-blue-500" />,
+      range: '100-499 points',
+      description: 'You’re making a difference with your questions and answers!',
+    },
+    {
+      name: 'Expert',
+      icon: <Trophy className="h-6 w-6 text-green-500" />,
+      range: '500-999 points',
+      description: 'Your expertise is shining through with valuable contributions.',
+    },
+    {
+      name: 'Master',
+      icon: <Medal className="h-6 w-6 text-purple-500" />,
+      range: '1,000-2,499 points',
+      description: 'A true master of knowledge, guiding the community with wisdom.',
+    },
+    {
+      name: 'Legend',
+      icon: <Crown className="h-6 w-6 text-red-500" />,
+      range: '2,500+ points',
+      description: 'A legendary member whose contributions shape the community.',
+    },
+  ];
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -80,6 +123,20 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ isOwnProfile }) => {
 
         setUserData(data.user);
         setFormData(data.user);
+        setReputationPoints(data.user.reputation || 0);
+
+        const points = data.user.reputation || 0;
+        if (points >= 2500) {
+          setCurrentBadge(badges[4]);
+        } else if (points >= 1000) {
+          setCurrentBadge(badges[3]);
+        } else if (points >= 500) {
+          setCurrentBadge(badges[2]);
+        } else if (points >= 100) {
+          setCurrentBadge(badges[1]);
+        } else {
+          setCurrentBadge(badges[0]);
+        }
       } catch (err) {
         console.error('Fetch error:', err);
         toast.error('Failed to fetch user data. Please try again.');
@@ -253,18 +310,35 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ isOwnProfile }) => {
             </div>
           )}
         </div>
-        <div className="mt-6 sm:mt-0 text-center sm:text-left flex-1">
-          <h1 className="text-3xl font-bold text-slate-900">{userData?.name}</h1>
-          <p className="text-lg text-slate-500 mt-1">{userData?.occupation || 'Not provided'}</p>
-          {!isEditing && isOwnProfile && (
-            <Button
-              onClick={handleEdit}
-              className="mt-4 bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-lg transition-colors flex items-center gap-2 mx-auto sm:mx-0"
-            >
-              <Edit size={16} />
-              Edit Profile
-            </Button>
-          )}
+        <div className="mt-6 sm:mt-0 text-center sm:text-left flex-1 flex flex-col sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-slate-900">{userData?.name}</h1>
+            <p className="text-lg text-slate-500 mt-1">{userData?.occupation || 'Not provided'}</p>
+            {!isEditing && isOwnProfile && (
+              <Button
+                onClick={handleEdit}
+                className="mt-4 bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-lg transition-colors flex items-center gap-2 mx-auto sm:mx-0"
+              >
+                <Edit size={16} />
+                Edit Profile
+              </Button>
+            )}
+          </div>
+          <div className="mt-6 sm:mt-0 sm:ml-4 flex flex-col items-center sm:items-end gap-4">
+            <div className="flex items-center gap-2 bg-indigo-50 px-4 py-3 rounded-lg shadow-sm">
+              <span className="text-sm font-medium text-slate-900">
+                Reputation Points: {reputationPoints} 
+              </span>
+            </div>
+            {currentBadge && (
+              <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-lg shadow-sm border border-slate-200">
+                {currentBadge.icon}
+                <span className="text-sm font-medium text-slate-900">
+                  {currentBadge.name}
+                </span>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -415,7 +489,6 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ isOwnProfile }) => {
                     >
                       {question.title}
                     </Link>
-
                   </h3>
                   <p className="text-sm text-slate-600 mt-1 line-clamp-3">{question.description}</p>
                   <div className="mt-2 flex flex-wrap gap-2">
