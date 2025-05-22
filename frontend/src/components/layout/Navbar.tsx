@@ -10,6 +10,7 @@ const Navbar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
   const [loggedIn, setLoggedIn] = useState(localStorage.getItem("isAuthenticatedToFactRush") === "true");
+  const [userId, setUserId] = useState(null);
 
   useEffect(() => {
     const checkAuthStatus = () => {
@@ -30,6 +31,29 @@ const Navbar: React.FC = () => {
   }, []);
 
 
+  useEffect(() => {
+    const fetchUserId = async () => {
+      try {
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/auth/getUserId`, {
+          method: 'GET',
+          credentials: 'include',
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.log('Error fetching user ID:', errorData.message);
+          return;
+        }
+
+        const data = await response.json();
+        setUserId(data.user_id);
+      } catch (err) {
+        console.error('Fetch user ID error:', err);
+      }
+    };
+
+    fetchUserId();
+  }, []);
 
   const handleLogout = async () => {
     try {
@@ -56,6 +80,7 @@ const Navbar: React.FC = () => {
       toast.error(error.message || 'Failed to log out');
     }
   };
+
 
   return (
     <nav className="bg-white border-b border-slate-200 sticky top-0 z-50">
@@ -106,7 +131,7 @@ const Navbar: React.FC = () => {
                       <div className="py-1">
                         <DropdownItem
                           onClick={() => {
-                            navigate('/profile');
+                            navigate(`/profile/${userId}`);
                             close();
                           }}
                           className="flex items-center cursor-pointer"
@@ -174,12 +199,12 @@ const Navbar: React.FC = () => {
           <Link to="/" className="bg-indigo-50 border-indigo-500 text-indigo-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium">
             Home
           </Link>
-          <Link to="/tags" className="border-transparent text-slate-500 hover:bg-slate-50 hover:border-slate-300 hover:text-slate-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium">
+          {/* <Link to="/tags" className="border-transparent text-slate-500 hover:bg-slate-50 hover:border-slate-300 hover:text-slate-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium">
             Tags
           </Link>
           <Link to="/users" className="border-transparent text-slate-500 hover:bg-slate-50 hover:border-slate-300 hover:text-slate-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium">
             Users
-          </Link>
+          </Link> */}
         </div>
         <div className="pt-4 pb-3 border-t border-slate-200">
           <div className="flex items-center px-4">
@@ -188,15 +213,19 @@ const Navbar: React.FC = () => {
                 <User className="h-6 w-6 text-slate-500" aria-hidden="true" />
               </div>
             </div>
-            <div className="ml-3">
+            {/* <div className="ml-3">
               <div className="text-base font-medium text-slate-800">Guest User</div>
               <div className="text-sm font-medium text-slate-500">guest@example.com</div>
-            </div>
+            </div> */}
           </div>
           <div className="mt-3 space-y-1">
-            <Link to="/profile" className="block px-4 py-2 text-base font-medium text-slate-500 hover:text-slate-800 hover:bg-slate-100">
-              Your Profile
-            </Link>
+              <Link
+                to={`/profile/${userId}`}
+                className="block px-4 py-2 text-base font-medium text-slate-500 hover:text-slate-800 hover:bg-slate-100"
+              >
+                Your Profile
+              </Link>
+
             <Link to="/settings" className="block px-4 py-2 text-base font-medium text-slate-500 hover:text-slate-800 hover:bg-slate-100">
               Settings
             </Link>

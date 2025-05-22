@@ -170,10 +170,12 @@ export const getUser = async (req, res) => {
         const userId = req.user_id;
 
         if (!userId) {
-            return res.status(401).json({ message: "You are not authorized to change the password!" });
+            return res.status(401).json({ message: "You are not authorized to get user data" });
         }
 
-        const existingUser = await User.findById(userId);
+        const { id } = req.params;
+
+        const existingUser = await User.findById(id);
 
         if (!existingUser) {
             return res.status(404).json({
@@ -349,3 +351,21 @@ export const resetForgotPassword = async (req, res) => {
         })
     }
 }
+
+export const getUserId = async (req, res) => {
+    try {
+        const userId = req.user_id;
+
+        if (!userId) {
+            return res.status(401).json({ message: "You are not authorized. No user ID found." });
+        }
+
+        return res.status(200).json({
+            user_id: userId,
+            message: "User ID retrieved successfully."
+        });
+    } catch (err) {
+        console.log(`Error in getUserId: ${err}`);
+        return res.status(500).json({ message: "Internal server error. Please try again." });
+    }
+};

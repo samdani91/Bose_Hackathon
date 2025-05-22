@@ -3,6 +3,7 @@ import { Input } from '../ui/Input';
 import { Button } from '../ui/Button';
 import { Mail, User, Briefcase, Save, Edit } from 'lucide-react';
 import { toast } from 'sonner';
+import { useParams } from 'react-router-dom';
 
 const CLOUDINARY_UPLOAD_PRESET = 'hackathonImages';
 const CLOUDINARY_CLOUD_NAME = 'dt3catuxy';
@@ -20,6 +21,7 @@ interface UserResponse {
 }
 
 export const ProfileForm: React.FC = () => {
+  const { id } = useParams<{ id: string }>();
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
@@ -30,7 +32,7 @@ export const ProfileForm: React.FC = () => {
   const fetchUser = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/auth/user`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/auth/user/${id}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',

@@ -44,13 +44,10 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({ question }) => {
 
   const [user, setUser] = useState<User>();
 
+
   const fetchUser = async () => {
-    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/auth/user`, {
+    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/auth/user/${question.user_id}`, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
-      },
       credentials: 'include',
     });
     if (!response.ok) {
@@ -58,7 +55,6 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({ question }) => {
       return;
     }
     const data = await response.json();
-    console.log('Fetched user', data.user);
     const newUser: User = {
       id: data.user._id,
       username: data.user.name,
@@ -152,7 +148,7 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({ question }) => {
                   </div>
                   <div className='flex flex-col'>
                     <div className="ml-2">
-                      <Link to={`/user/${user?.id}`} className="text-slate-700 hover:text-indigo-600">
+                      <Link to={`/profile/${question.user_id}`} className="text-slate-700 hover:text-indigo-600">
                         {user?.username}
                       </Link>
                     </div>

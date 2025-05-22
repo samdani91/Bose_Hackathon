@@ -16,7 +16,7 @@ function App() {
       <Routes>
         <Route path="/" element={<MainLayout> <HomePage /> </MainLayout>} />
         <Route element={<ProtectedRoute />} >
-          <Route path="/profile" element={<MainLayout> <ProfilePage /> </MainLayout>} />
+          <Route path="/profile/:id" element={<MainLayout> <ProfilePage /> </MainLayout>} />
         </Route>
         <Route element={<ProtectedRoute />} >
           <Route path='settings' element={<MainLayout> <SettingsPage /> </MainLayout>} />
